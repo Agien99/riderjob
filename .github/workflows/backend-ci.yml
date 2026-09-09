@@ -37,7 +37,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PYTHONPATH: .
-        run: python scripts/test_database.py
+        run: python scripts/check_database.py
 
       - name: Run tests
         env:
