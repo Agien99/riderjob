@@ -1,4 +1,14 @@
-import { useLocation } from 'react-router-dom'
+import {
+  useEffect,
+  useRef,
+  useState,
+} from 'react'
+import {
+  useLocation,
+  useNavigate,
+} from 'react-router-dom'
+
+import { useAuth } from '../context/useAuth'
 
 const pageTitles = {
   '/dashboard': {
@@ -43,12 +53,79 @@ function getPageInformation(pathname) {
   )
 }
 
+function getInitials(displayName) {
+  if (!displayName) {
+    return 'RJ'
+  }
+
+  return displayName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase()
+}
+
 function AppHeader() {
   const location = useLocation()
+  const navigate = useNavigate()
+
+  const {
+    user,
+    logout,
+  } = useAuth()
+
+  const [menuOpen, setMenuOpen] =
+    useState(false)
+
+  const menuRef = useRef(null)
 
   const page = getPageInformation(
     location.pathname,
   )
+
+  useEffect(() => {
+    function handleOutsideClick(event) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(
+          event.target,
+        )
+      ) {
+        setMenuOpen(false)
+      }
+    }
+
+    document.addEventListener(
+      'mousedown',
+      handleOutsideClick,
+    )
+
+    return () => {
+      document.removeEventListener(
+        'mousedown',
+        handleOutsideClick,
+      )
+    }
+  }, [])
+
+  function handleLogout() {
+    logout()
+    setMenuOpen(false)
+
+    navigate(
+      '/login',
+      {
+        replace: true,
+      },
+    )
+  }
+
+  function handleProfile() {
+    setMenuOpen(false)
+    navigate('/profile')
+  }
 
   return (
     <header className="app-header">
@@ -63,13 +140,55 @@ function AppHeader() {
           <span>System Online</span>
         </div>
 
-        <button
-          className="profile-button"
-          type="button"
-          aria-label="Open profile"
+        <div
+          className="profile-menu"
+          ref={menuRef}
         >
-          AG
-        </button>
+          <button
+            className="profile-button"
+            type="button"
+            aria-label="Open account menu"
+            aria-expanded={menuOpen}
+            onClick={() =>
+              setMenuOpen(
+                (current) => !current,
+              )
+            }
+          >
+            {getInitials(
+              user?.display_name,
+            )}
+          </button>
+
+          {menuOpen && (
+            <div className="profile-dropdown">
+              <div className="profile-dropdown-user">
+                <strong>
+                  {user?.display_name}
+                </strong>
+
+                <span>
+                  {user?.email}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleProfile}
+              >
+                Profile
+              </button>
+
+              <button
+                type="button"
+                className="profile-dropdown-logout"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   )
