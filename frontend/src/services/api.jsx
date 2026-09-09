@@ -39,7 +39,7 @@ async function apiRequest(
   try {
     data = await response.json()
   } catch {
-    data = null
+    // Response does not contain JSON.
   }
 
   if (!response.ok) {
