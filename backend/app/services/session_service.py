@@ -136,6 +136,46 @@ def end_session(
     db.commit()
     db.refresh(rider_session)
 
+    return build_session_detail(
+        rider_session
+    )
+
+
+def get_completed_sessions(
+    db: Session,
+    user_id: UUID,
+) -> list[RiderSession]:
+    statement = (
+        select(RiderSession)
+        .where(
+            RiderSession.user_id
+            == user_id,
+            RiderSession.status
+            == "completed",
+        )
+        .order_by(
+            RiderSession.start_time.desc()
+        )
+    )
+
+    return list(
+        db.scalars(statement).all()
+    )
+
+
+def build_session_detail(
+    rider_session: RiderSession,
+) -> SessionDetailResponse:
+    if (
+        rider_session.end_time
+        is None
+        or rider_session.end_mileage
+        is None
+    ):
+        raise ValueError(
+            "Rider session is not completed."
+        )
+
     metrics = build_session_metrics(
         start_mileage=(
             rider_session.start_mileage

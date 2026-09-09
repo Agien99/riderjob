@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import (
     APIRouter,
     Depends,
@@ -18,13 +20,14 @@ from app.schemas.session import (
     StartSessionRequest,
 )
 from app.services.session_service import (
+    build_session_detail,
     create_session,
     end_session,
     get_active_session,
+    get_completed_sessions,
     get_session_by_id,
 )
 
-from uuid import UUID
 
 router = APIRouter(
     prefix="/api/sessions",
@@ -44,11 +47,9 @@ def start_session(
         get_current_user
     ),
 ):
-    active_session = (
-        get_active_session(
-            db,
-            current_user.id,
-        )
+    active_session = get_active_session(
+        db,
+        current_user.id,
     )
 
     if active_session is not None:
@@ -72,6 +73,7 @@ def start_session(
         notes=request.notes,
     )
 
+
 @router.get(
     "/active",
     response_model=SessionResponse,
@@ -82,11 +84,9 @@ def read_active_session(
         get_current_user
     ),
 ):
-    active_session = (
-        get_active_session(
-            db,
-            current_user.id,
-        )
+    active_session = get_active_session(
+        db,
+        current_user.id,
     )
 
     if active_session is None:
@@ -102,6 +102,80 @@ def read_active_session(
 
     return active_session
 
+
+@router.get(
+    "",
+    response_model=list[
+        SessionResponse
+    ],
+)
+def read_session_history(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
+):
+    return get_completed_sessions(
+        db,
+        current_user.id,
+    )
+
+
+@router.get(
+    "/{session_id}",
+    response_model=SessionDetailResponse,
+)
+def read_session_detail(
+    session_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
+):
+    rider_session = get_session_by_id(
+        db,
+        session_id,
+        current_user.id,
+    )
+
+    if rider_session is None:
+        raise HTTPException(
+            status_code=(
+                status.HTTP_404_NOT_FOUND
+            ),
+            detail=(
+                "Rider session not found."
+            ),
+        )
+
+    if (
+        rider_session.status
+        != "completed"
+    ):
+        raise HTTPException(
+            status_code=(
+                status.HTTP_400_BAD_REQUEST
+            ),
+            detail=(
+                "Rider session is not "
+                "completed."
+            ),
+        )
+
+    try:
+        return build_session_detail(
+            rider_session
+        )
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=(
+                status.HTTP_400_BAD_REQUEST
+            ),
+            detail=str(error),
+        ) from error
+
+
 @router.post(
     "/{session_id}/end",
     response_model=SessionDetailResponse,
@@ -114,12 +188,10 @@ def complete_session(
         get_current_user
     ),
 ):
-    rider_session = (
-        get_session_by_id(
-            db,
-            session_id,
-            current_user.id,
-        )
+    rider_session = get_session_by_id(
+        db,
+        session_id,
+        current_user.id,
     )
 
     if rider_session is None:

@@ -13,9 +13,11 @@ from app.schemas.session import (
     EndSessionRequest,
 )
 from app.services.session_service import (
+    build_session_detail,
     create_session,
     end_session,
     get_active_session,
+    get_completed_sessions,
     get_session_by_id,
 )
 
@@ -117,15 +119,19 @@ def test_create_session():
     )
 
     assert result.user_id == user_id
+
     assert (
         result.platform
         == "grabfood"
     )
+
     assert (
         result.start_mileage
         == Decimal("1000.00")
     )
+
     assert result.status == "active"
+
     assert (
         result.notes
         == "Evening ride"
@@ -139,6 +145,7 @@ def test_create_session():
 def test_get_active_session_returns_scalar():
     db = make_db()
     user_id = uuid.uuid4()
+
     rider_session = (
         make_active_session()
     )
@@ -157,11 +164,13 @@ def test_get_active_session_returns_scalar():
     )
 
     assert result is rider_session
+
     db.scalar.assert_called_once()
 
 
 def test_get_session_by_id_returns_scalar():
     db = make_db()
+
     rider_session = (
         make_active_session()
     )
@@ -181,11 +190,155 @@ def test_get_session_by_id_returns_scalar():
     )
 
     assert result is rider_session
+
     db.scalar.assert_called_once()
+
+
+def test_get_completed_sessions():
+    db = make_db()
+    user_id = uuid.uuid4()
+
+    first_session = (
+        make_active_session()
+    )
+
+    second_session = (
+        make_active_session()
+    )
+
+    first_session.user_id = user_id
+    second_session.user_id = user_id
+
+    first_session.status = (
+        "completed"
+    )
+
+    second_session.status = (
+        "completed"
+    )
+
+    db.scalars.return_value.all.return_value = [
+        first_session,
+        second_session,
+    ]
+
+    result = get_completed_sessions(
+        db,
+        user_id,
+    )
+
+    assert result == [
+        first_session,
+        second_session,
+    ]
+
+    db.scalars.assert_called_once()
+
+
+def test_build_session_detail():
+    rider_session = (
+        make_active_session()
+    )
+
+    rider_session.status = (
+        "completed"
+    )
+
+    rider_session.start_time = (
+        datetime(
+            2026,
+            8,
+            16,
+            9,
+            10,
+            tzinfo=timezone.utc,
+        )
+    )
+
+    rider_session.end_time = (
+        datetime(
+            2026,
+            8,
+            16,
+            10,
+            36,
+            tzinfo=timezone.utc,
+        )
+    )
+
+    rider_session.end_mileage = (
+        Decimal("5262.00")
+    )
+
+    rider_session.total_orders = 2
+
+    rider_session.gross_income = (
+        Decimal("11.91")
+    )
+
+    rider_session.fuel_cost = (
+        Decimal("0.00")
+    )
+
+    rider_session.other_expenses = (
+        Decimal("0.00")
+    )
+
+    result = build_session_detail(
+        rider_session
+    )
+
+    assert (
+        result.metrics.distance_km
+        == Decimal("28.00")
+    )
+
+    assert (
+        result.metrics.duration_minutes
+        == 86
+    )
+
+    assert (
+        result.metrics.net_income
+        == Decimal("11.91")
+    )
+
+    assert (
+        result.metrics.income_per_hour
+        == Decimal("8.31")
+    )
+
+    assert (
+        result.metrics.income_per_order
+        == Decimal("5.96")
+    )
+
+    assert (
+        result.metrics.income_per_km
+        == Decimal("0.43")
+    )
+
+
+def test_build_session_detail_rejects_active_session():
+    rider_session = (
+        make_active_session()
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Rider session is "
+            "not completed."
+        ),
+    ):
+        build_session_detail(
+            rider_session
+        )
 
 
 def test_end_session_success():
     db = make_db()
+
     rider_session = (
         make_active_session()
     )
@@ -267,6 +420,7 @@ def test_end_session_success():
 
 def test_end_session_rejects_completed_session():
     db = make_db()
+
     rider_session = (
         make_active_session()
     )
@@ -305,6 +459,7 @@ def test_end_session_rejects_completed_session():
 
 def test_end_session_rejects_lower_mileage():
     db = make_db()
+
     rider_session = (
         make_active_session()
     )
@@ -339,6 +494,7 @@ def test_end_session_rejects_lower_mileage():
 
 def test_end_session_preserves_notes_when_missing():
     db = make_db()
+
     rider_session = (
         make_active_session()
     )

@@ -19,7 +19,9 @@ from app.models import (
     User,
 )
 from app.schemas.session import (
-    EndSessionRequest,
+    SessionDetailResponse,
+    SessionMetrics,
+    SessionResponse,
 )
 
 
@@ -85,6 +87,7 @@ def test_start_session_success(
     monkeypatch,
 ):
     user = make_user()
+
     rider_session = make_session(
         user.id
     )
@@ -148,6 +151,7 @@ def test_cannot_start_second_session(
     monkeypatch,
 ):
     user = make_user()
+
     rider_session = make_session(
         user.id
     )
@@ -226,10 +230,12 @@ def test_start_session_requires_authentication():
         403,
     )
 
+
 def test_get_active_session_success(
     monkeypatch,
 ):
     user = make_user()
+
     rider_session = make_session(
         user.id
     )
@@ -308,10 +314,321 @@ def test_get_active_session_not_found(
         "found."
     )
 
+
+def test_get_session_history_success(
+    monkeypatch,
+):
+    user = make_user()
+
+    first_session = make_session(
+        user.id
+    )
+
+    second_session = make_session(
+        user.id
+    )
+
+    first_session.status = (
+        "completed"
+    )
+
+    second_session.status = (
+        "completed"
+    )
+
+    first_session.end_time = (
+        datetime.now(
+            timezone.utc
+        )
+    )
+
+    second_session.end_time = (
+        datetime.now(
+            timezone.utc
+        )
+    )
+
+    first_session.end_mileage = (
+        Decimal("5262.00")
+    )
+
+    second_session.end_mileage = (
+        Decimal("5280.00")
+    )
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_completed_sessions",
+        MagicMock(
+            return_value=[
+                first_session,
+                second_session,
+            ]
+        ),
+    )
+
+    response = client.get(
+        "/api/sessions"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert len(data) == 2
+
+    assert (
+        data[0]["status"]
+        == "completed"
+    )
+
+    assert (
+        data[1]["status"]
+        == "completed"
+    )
+
+
+def test_get_session_history_empty(
+    monkeypatch,
+):
+    user = make_user()
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_completed_sessions",
+        MagicMock(
+            return_value=[]
+        ),
+    )
+
+    response = client.get(
+        "/api/sessions"
+    )
+
+    assert response.status_code == 200
+
+    assert response.json() == []
+
+
+def test_get_session_detail_success(
+    monkeypatch,
+):
+    user = make_user()
+
+    rider_session = make_session(
+        user.id
+    )
+
+    rider_session.status = (
+        "completed"
+    )
+
+    rider_session.end_time = (
+        datetime.now(
+            timezone.utc
+        )
+    )
+
+    rider_session.end_mileage = (
+        Decimal("5262.00")
+    )
+
+    rider_session.total_orders = 2
+
+    rider_session.gross_income = (
+        Decimal("11.91")
+    )
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=rider_session
+        ),
+    )
+
+    session_data = (
+        SessionResponse.model_validate(
+            rider_session
+        )
+    )
+
+    result = SessionDetailResponse(
+        **session_data.model_dump(),
+        metrics=SessionMetrics(
+            distance_km=Decimal(
+                "28.00"
+            ),
+            duration_minutes=86,
+            net_income=Decimal(
+                "11.91"
+            ),
+            income_per_hour=Decimal(
+                "8.31"
+            ),
+            income_per_order=Decimal(
+                "5.96"
+            ),
+            income_per_km=Decimal(
+                "0.43"
+            ),
+        ),
+    )
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "build_session_detail",
+        MagicMock(
+            return_value=result
+        ),
+    )
+
+    response = client.get(
+        (
+            f"/api/sessions/"
+            f"{rider_session.id}"
+        )
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert (
+        data["id"]
+        == str(rider_session.id)
+    )
+
+    assert (
+        data["status"]
+        == "completed"
+    )
+
+    assert (
+        data["metrics"][
+            "distance_km"
+        ]
+        == "28.00"
+    )
+
+    assert (
+        data["metrics"][
+            "income_per_order"
+        ]
+        == "5.96"
+    )
+
+
+def test_get_session_detail_not_found(
+    monkeypatch,
+):
+    user = make_user()
+
+    session_id = uuid.uuid4()
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=None
+        ),
+    )
+
+    response = client.get(
+        (
+            f"/api/sessions/"
+            f"{session_id}"
+        )
+    )
+
+    assert response.status_code == 404
+
+    assert response.json()[
+        "detail"
+    ] == (
+        "Rider session not found."
+    )
+
+
+def test_get_session_detail_rejects_active(
+    monkeypatch,
+):
+    user = make_user()
+
+    rider_session = make_session(
+        user.id
+    )
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=rider_session
+        ),
+    )
+
+    response = client.get(
+        (
+            f"/api/sessions/"
+            f"{rider_session.id}"
+        )
+    )
+
+    assert response.status_code == 400
+
+    assert response.json()[
+        "detail"
+    ] == (
+        "Rider session is not "
+        "completed."
+    )
+
+
 def test_end_session_success(
     monkeypatch,
 ):
     user = make_user()
+
     rider_session = make_session(
         user.id
     )
@@ -329,7 +646,9 @@ def test_end_session_success(
     )
 
     completed_session.end_time = (
-        datetime.now(timezone.utc)
+        datetime.now(
+            timezone.utc
+        )
     )
 
     completed_session.end_mileage = (
@@ -356,12 +675,6 @@ def test_end_session_success(
         MagicMock(
             return_value=rider_session
         ),
-    )
-
-    from app.schemas.session import (
-        SessionDetailResponse,
-        SessionMetrics,
-        SessionResponse,
     )
 
     session_data = (
@@ -418,10 +731,15 @@ def test_end_session_success(
 
     data = response.json()
 
-    assert data["status"] == "completed"
+    assert (
+        data["status"]
+        == "completed"
+    )
 
     assert (
-        data["metrics"]["distance_km"]
+        data["metrics"][
+            "distance_km"
+        ]
         == "28.00"
     )
 
@@ -437,6 +755,7 @@ def test_end_session_not_found(
     monkeypatch,
 ):
     user = make_user()
+
     session_id = uuid.uuid4()
 
     app.dependency_overrides[
@@ -456,7 +775,10 @@ def test_end_session_not_found(
     )
 
     response = client.post(
-        f"/api/sessions/{session_id}/end",
+        (
+            f"/api/sessions/"
+            f"{session_id}/end"
+        ),
         json={
             "end_mileage": "5262.00",
             "total_orders": 2,
@@ -471,6 +793,7 @@ def test_end_session_rejects_invalid_mileage(
     monkeypatch,
 ):
     user = make_user()
+
     rider_session = make_session(
         user.id
     )
