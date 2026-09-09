@@ -1,15 +1,17 @@
 from datetime import date, datetime
 from decimal import Decimal
 from uuid import UUID
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 
 class StartSessionRequest(BaseModel):
-    platform: str = Field(
-        min_length=2,
-        max_length=50,
-    )
+    platform: Literal[
+        "shopeefood",
+        "grabfood",
+        "lalamove",
+    ]
 
     start_mileage: Decimal = Field(
         ge=0,
