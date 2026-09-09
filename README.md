@@ -73,9 +73,51 @@ Dashboard and Analytics Updated
 
 ---
 
-## Technology Stack
+# System Architecture
 
-### Frontend
+RiderJob uses a separated frontend, backend API, and database architecture.
+
+```text
+┌─────────────────────────────┐
+│        React + Vite         │
+│          Frontend           │
+│                             │
+│  GitHub Pages               │
+└──────────────┬──────────────┘
+               │
+               │ HTTPS / REST API
+               ▼
+┌─────────────────────────────┐
+│           FastAPI           │
+│          Backend API        │
+│                             │
+│  Authentication            │
+│  Business Logic            │
+│  Validation                │
+│  Analytics                 │
+└──────────────┬──────────────┘
+               │
+               │ PostgreSQL
+               ▼
+┌─────────────────────────────┐
+│            Neon             │
+│         PostgreSQL DB       │
+│                             │
+│  Users                     │
+│  Rider Sessions            │
+│  Application Data          │
+└─────────────────────────────┘
+```
+
+The React frontend must not connect directly to the Neon database.
+
+All database access and business logic should pass through the FastAPI backend.
+
+---
+
+# Technology Stack
+
+## Frontend
 
 * React
 * Vite
@@ -83,27 +125,68 @@ Dashboard and Analytics Updated
 * CSS
 * React Router
 
-### Backend / Database
+## Backend
 
-* Supabase
+* Python
+* FastAPI
+* REST API
+* Pydantic
+* SQLAlchemy
+
+## Database
+
+* Neon
 * PostgreSQL
-* Supabase Authentication
 
-### Deployment
+## Authentication
+
+Authentication will be handled through the FastAPI backend.
+
+Initial authentication:
+
+* Email
+* Password
+* Password hashing
+* Token-based authentication
+* Protected API endpoints
+
+Possible future authentication:
+
+* Google Sign-In
+
+## Deployment
+
+### Frontend
 
 * GitHub
 * GitHub Actions
 * GitHub Pages
 
-Planned production URL:
+Planned frontend URL:
 
 ```text
 https://agien99.github.io/riderjob/
 ```
 
+### Backend
+
+Planned deployment:
+
+* Render
+
+The production API URL will be configured through frontend environment variables.
+
+### Database
+
+* Neon PostgreSQL
+
+Database credentials must only be available to the backend.
+
+They must never be exposed through the React frontend.
+
 ---
 
-## Design Direction
+# Design Direction
 
 RiderJob uses a dark, technology-focused interface inspired by engineering dashboards and developer tools.
 
@@ -149,13 +232,18 @@ Built by a Developer, for Real Life.
 
 Users must authenticate before accessing rider records.
 
-Initial authentication:
+Initial authentication will support:
 
-* Email and password
+* User registration
+* Email/password login
+* Password hashing
+* Authentication token
+* Protected frontend routes
+* Protected API endpoints
+* Logout
+* Persistent login session
 
-Possible future authentication:
-
-* Google Sign-In
+The authentication implementation must ensure that passwords are never stored as plain text.
 
 ---
 
@@ -196,7 +284,7 @@ Platform
 Starting Mileage
 ```
 
-The system records automatically:
+The system automatically records:
 
 ```text
 Session Date
@@ -204,6 +292,8 @@ Start Time
 ```
 
 An optional note may also be recorded.
+
+The backend validates the request before creating the active session.
 
 ---
 
@@ -219,7 +309,9 @@ While a rider session is running, the application displays:
 
 The rider can end the session at any time.
 
-Only one active session should normally exist for a user.
+A user should normally have only one active rider session.
+
+The backend must prevent accidental creation of multiple active sessions for the same user.
 
 ---
 
@@ -238,7 +330,13 @@ Notes
 
 The application automatically records the ending time.
 
-The completed session is then saved into session history.
+The backend validates the submitted information and updates the session status to:
+
+```text
+completed
+```
+
+The completed session becomes available in session history and analytics.
 
 ---
 
@@ -255,6 +353,8 @@ Planned capabilities:
 * Edit session
 * Delete incorrect session
 * Search records
+
+Users must only be able to access their own rider sessions.
 
 ---
 
@@ -290,17 +390,37 @@ Later versions may include:
 
 # Database Design
 
-The initial database will use Supabase PostgreSQL.
+The database will use Neon PostgreSQL.
 
-Primary table:
+## `users`
+
+Stores RiderJob user accounts.
+
+| Column          | Type        | Description         |
+| --------------- | ----------- | ------------------- |
+| `id`            | UUID        | Primary key         |
+| `email`         | VARCHAR     | Unique user email   |
+| `password_hash` | VARCHAR     | Hashed password     |
+| `display_name`  | VARCHAR     | User display name   |
+| `is_active`     | BOOLEAN     | Account status      |
+| `created_at`    | TIMESTAMPTZ | Account creation    |
+| `updated_at`    | TIMESTAMPTZ | Last account update |
+
+Passwords must never be stored directly.
+
+Only securely generated password hashes should be stored.
+
+---
 
 ## `rider_sessions`
+
+Stores rider work sessions.
 
 | Column           | Type        | Description                       |
 | ---------------- | ----------- | --------------------------------- |
 | `id`             | UUID        | Primary key                       |
-| `user_id`        | UUID        | Supabase authenticated user       |
-| `platform`       | TEXT        | Rider platform                    |
+| `user_id`        | UUID        | Foreign key to `users.id`         |
+| `platform`       | VARCHAR     | Rider platform                    |
 | `session_date`   | DATE        | Session date                      |
 | `start_time`     | TIMESTAMPTZ | Session start                     |
 | `end_time`       | TIMESTAMPTZ | Session end                       |
@@ -311,116 +431,216 @@ Primary table:
 | `fuel_cost`      | NUMERIC     | Fuel expense                      |
 | `other_expenses` | NUMERIC     | Other rider expenses              |
 | `notes`          | TEXT        | Optional notes                    |
-| `status`         | TEXT        | `active` or `completed`           |
+| `status`         | VARCHAR     | `active` or `completed`           |
 | `created_at`     | TIMESTAMPTZ | Record creation timestamp         |
 | `updated_at`     | TIMESTAMPTZ | Record update timestamp           |
 
+Relationship:
+
+```text
+users
+  │
+  │ 1
+  │
+  └────────────── *
+             rider_sessions
+```
+
+One user can have many rider sessions.
+
 ---
 
-## Calculated Values
+# Calculated Values
 
 Calculated values should generally not be stored directly in the database.
 
-### Distance
+They should be derived from the underlying session data.
+
+## Distance
 
 ```text
 distance =
 end_mileage - start_mileage
 ```
 
-### Session Duration
+## Session Duration
 
 ```text
 duration =
 end_time - start_time
 ```
 
-### Net Income
+## Net Income
 
 ```text
 net_income =
 gross_income - fuel_cost - other_expenses
 ```
 
-### Gross Earnings Per Hour
+## Gross Earnings Per Hour
 
 ```text
 gross_income_per_hour =
 gross_income / session_duration_hours
 ```
 
-### Net Earnings Per Hour
+## Net Earnings Per Hour
 
 ```text
 net_income_per_hour =
 net_income / session_duration_hours
 ```
 
-### Earnings Per Kilometre
+## Earnings Per Kilometre
 
 ```text
 income_per_km =
 gross_income / distance
 ```
 
-### Earnings Per Order
+## Earnings Per Order
 
 ```text
 income_per_order =
 gross_income / total_orders
 ```
 
-Calculated fields should handle zero values safely to prevent divide-by-zero errors.
+Calculated fields must safely handle:
+
+* Zero orders
+* Zero distance
+* Zero duration
+* Incomplete active sessions
 
 ---
 
-# Planned Application Structure
+# Planned API
+
+Initial REST API structure:
 
 ```text
-src/
-│
-├── components/
-│   ├── AppHeader.jsx
-│   ├── Sidebar.jsx
-│   ├── MobileNavigation.jsx
-│   ├── StatCard.jsx
-│   ├── PlatformCard.jsx
-│   ├── PlatformBadge.jsx
-│   └── SessionCard.jsx
-│
-├── layouts/
-│   └── AppLayout.jsx
-│
-├── pages/
-│   ├── Login.jsx
-│   ├── Dashboard.jsx
-│   ├── StartSession.jsx
-│   ├── ActiveSession.jsx
-│   ├── SessionHistory.jsx
-│   ├── SessionDetail.jsx
-│   ├── Analytics.jsx
-│   └── Profile.jsx
-│
-├── services/
-│   ├── supabase.js
-│   ├── authService.js
-│   └── riderSessionService.js
-│
-├── utils/
-│   ├── calculations.js
-│   ├── formatters.js
-│   └── constants.js
-│
-├── styles/
-│   ├── variables.css
-│   ├── global.css
-│   └── responsive.css
-│
-├── App.jsx
-└── main.jsx
+/api/health
+
+/api/auth/register
+/api/auth/login
+/api/auth/me
+
+/api/sessions
+/api/sessions/active
+/api/sessions/start
+/api/sessions/{id}
+/api/sessions/{id}/end
+
+/api/dashboard
+/api/analytics
 ```
 
-This structure may change as development progresses.
+Expected HTTP methods may include:
+
+```text
+GET
+POST
+PUT
+PATCH
+DELETE
+```
+
+All protected endpoints must verify the authenticated user.
+
+---
+
+# Planned Repository Structure
+
+RiderJob will contain separate frontend and backend applications.
+
+```text
+riderjob/
+│
+├── frontend/
+│   │
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── AppHeader.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── MobileNavigation.jsx
+│   │   │   ├── StatCard.jsx
+│   │   │   ├── PlatformCard.jsx
+│   │   │   ├── PlatformBadge.jsx
+│   │   │   └── SessionCard.jsx
+│   │   │
+│   │   ├── layouts/
+│   │   │   └── AppLayout.jsx
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── StartSession.jsx
+│   │   │   ├── ActiveSession.jsx
+│   │   │   ├── SessionHistory.jsx
+│   │   │   ├── SessionDetail.jsx
+│   │   │   ├── Analytics.jsx
+│   │   │   └── Profile.jsx
+│   │   │
+│   │   ├── services/
+│   │   │   ├── api.js
+│   │   │   ├── authService.js
+│   │   │   └── riderSessionService.js
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── calculations.js
+│   │   │   ├── formatters.js
+│   │   │   └── constants.js
+│   │   │
+│   │   ├── styles/
+│   │   │   ├── variables.css
+│   │   │   ├── global.css
+│   │   │   └── responsive.css
+│   │   │
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   │
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend/
+│   │
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── routers/
+│   │   │       ├── auth.py
+│   │   │       ├── sessions.py
+│   │   │       ├── dashboard.py
+│   │   │       └── analytics.py
+│   │   │
+│   │   ├── models/
+│   │   │   ├── user.py
+│   │   │   └── rider_session.py
+│   │   │
+│   │   ├── schemas/
+│   │   │   ├── auth.py
+│   │   │   └── rider_session.py
+│   │   │
+│   │   ├── services/
+│   │   │   ├── auth_service.py
+│   │   │   ├── session_service.py
+│   │   │   └── analytics_service.py
+│   │   │
+│   │   ├── database.py
+│   │   ├── config.py
+│   │   └── main.py
+│   │
+│   ├── tests/
+│   └── requirements.txt
+│
+├── .github/
+│   └── workflows/
+│
+├── .gitignore
+└── README.md
+```
+
+The structure may evolve as development progresses.
 
 ---
 
@@ -434,65 +654,93 @@ This structure may change as development progresses.
 * [x] Define MVP features
 * [x] Define initial database structure
 * [x] Select technology stack
+* [x] Select system architecture
 * [x] Select UI design direction
 
 ---
 
-## Phase 2 — Project Setup
+## Phase 2 — Project Foundation
 
-* [ ] Create React + Vite project
-* [ ] Configure repository structure
+### Frontend
+
+* [ ] Create React + Vite application
 * [ ] Install React Router
-* [ ] Configure base application layout
+* [ ] Configure frontend folder structure
 * [ ] Configure GitHub Pages base path
-* [ ] Configure GitHub Actions deployment
 * [ ] Configure ESLint
-* [ ] Create initial application routes
+* [ ] Create initial routes
+
+### Backend
+
+* [ ] Create Python virtual environment
+* [ ] Create FastAPI application
+* [ ] Configure backend folder structure
+* [ ] Configure environment variables
+* [ ] Create health endpoint
+* [ ] Configure CORS
+
+### Database
+
+* [ ] Create Neon PostgreSQL database
+* [ ] Configure backend database connection
+* [ ] Verify database connectivity
 
 ---
 
-## Phase 3 — Authentication
+## Phase 3 — Database and Authentication
 
-* [ ] Create Supabase project
-* [ ] Configure Supabase client
-* [ ] Configure authentication
-* [ ] Login page
-* [ ] Registration
-* [ ] Protected routes
+* [ ] Create `users` table
+* [ ] Create `rider_sessions` table
+* [ ] Configure database models
+* [ ] Configure migrations
+* [ ] User registration
+* [ ] Password hashing
+* [ ] User login
+* [ ] Token authentication
+* [ ] Protected API endpoints
+* [ ] Protected frontend routes
 * [ ] Logout
-* [ ] Persistent authentication session
+* [ ] Persistent authentication
+* [ ] Authentication tests
 
 ---
 
 ## Phase 4 — Rider Session Engine
 
 * [ ] Platform selection
-* [ ] Start session
+* [ ] Start session endpoint
 * [ ] Store starting mileage
 * [ ] Automatically record start time
-* [ ] Detect active session
+* [ ] Prevent duplicate active sessions
+* [ ] Retrieve active session
 * [ ] Active session page
 * [ ] Session duration
-* [ ] End session
+* [ ] End session endpoint
 * [ ] Record session results
+* [ ] Validate ending mileage
 * [ ] Automatically calculate session metrics
+* [ ] Session engine tests
 
 ---
 
 ## Phase 5 — Session History
 
-* [ ] Session listing
-* [ ] Session detail
+* [ ] Session listing API
+* [ ] Session history page
+* [ ] Session detail API
+* [ ] Session detail page
 * [ ] Platform filtering
 * [ ] Date filtering
 * [ ] Edit session
 * [ ] Delete session
 * [ ] Validation
+* [ ] History tests
 
 ---
 
 ## Phase 6 — Dashboard
 
+* [ ] Dashboard API
 * [ ] Today's statistics
 * [ ] Weekly statistics
 * [ ] Monthly statistics
@@ -500,11 +748,13 @@ This structure may change as development progresses.
 * [ ] Recent sessions
 * [ ] Platform overview
 * [ ] Quick start session
+* [ ] Dashboard tests
 
 ---
 
 ## Phase 7 — Analytics
 
+* [ ] Analytics API
 * [ ] Platform earnings comparison
 * [ ] Platform order comparison
 * [ ] Daily earnings trend
@@ -516,6 +766,7 @@ This structure may change as development progresses.
 * [ ] Distance statistics
 * [ ] Riding time statistics
 * [ ] Fuel expense statistics
+* [ ] Analytics tests
 
 ---
 
@@ -526,6 +777,7 @@ This structure may change as development progresses.
 * [ ] Mobile navigation
 * [ ] Responsive dashboard
 * [ ] Responsive session pages
+* [ ] Responsive history
 * [ ] Responsive analytics
 * [ ] Loading states
 * [ ] Empty states
@@ -535,17 +787,43 @@ This structure may change as development progresses.
 
 ---
 
-## Phase 9 — Testing and Deployment
+## Phase 9 — CI/CD and Deployment
 
-* [ ] Calculation tests
-* [ ] Session workflow tests
-* [ ] Authentication tests
-* [ ] Responsive testing
-* [ ] GitHub Actions build
-* [ ] GitHub Pages deployment
-* [ ] Production verification
+### CI
 
-Production target:
+* [ ] Frontend build workflow
+* [ ] Frontend lint checks
+* [ ] Backend pytest workflow
+* [ ] Automated test execution
+
+### Frontend Deployment
+
+* [ ] GitHub Pages workflow
+* [ ] Configure production API URL
+* [ ] Deploy frontend
+* [ ] Verify routing
+
+### Backend Deployment
+
+* [ ] Configure Render service
+* [ ] Configure production environment variables
+* [ ] Configure Neon `DB_URL`
+* [ ] Configure production CORS
+* [ ] Deploy FastAPI backend
+* [ ] Verify API health
+
+### Production Verification
+
+* [ ] Registration
+* [ ] Login
+* [ ] Start session
+* [ ] End session
+* [ ] History
+* [ ] Dashboard
+* [ ] Analytics
+* [ ] Mobile testing
+
+Production frontend target:
 
 ```text
 https://agien99.github.io/riderjob/
@@ -577,6 +855,7 @@ These may include:
 * Progressive Web App support
 * Offline session recording
 * Push notifications
+* Google authentication
 * Multi-motorcycle support
 * Additional rider platforms
 
@@ -604,6 +883,24 @@ Visually polished
 
 The application should be especially quick to use on mobile because rider sessions are normally started and ended while away from a desktop computer.
 
+The backend should remain responsible for:
+
+* Authentication
+* Authorization
+* Validation
+* Business rules
+* Database access
+* Sensitive configuration
+
+The frontend should remain responsible for:
+
+* User interface
+* User interaction
+* Client-side presentation
+* API communication
+
+Sensitive credentials must never be committed to the repository.
+
 ---
 
 # Project Status
@@ -611,6 +908,16 @@ The application should be especially quick to use on mobile because rider sessio
 **Current Stage:** Planning / Initial Development
 
 **Version:** Pre-Alpha
+
+Current architecture:
+
+```text
+React + Vite
+      ↓
+FastAPI REST API
+      ↓
+Neon PostgreSQL
+```
 
 The project is currently being designed and developed.
 
