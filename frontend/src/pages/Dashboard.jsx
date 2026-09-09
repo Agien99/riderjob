@@ -1,9 +1,13 @@
 function Dashboard() {
   return (
-    <main>
-      <h1>RiderJob</h1>
-      <p>Ride. Track. Improve.</p>
-    </main>
+    <section>
+      <h3>Welcome to RiderJob</h3>
+
+      <p>
+        Your rider performance dashboard will
+        appear here.
+      </p>
+    </section>
   )
 }
 
