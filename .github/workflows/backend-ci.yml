@@ -38,6 +38,12 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PYTHONPATH: .
         run: python scripts/check_database.py
+        
+      - name: Apply database migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PYTHONPATH: .
+        run: alembic upgrade head
 
       - name: Run tests
         env:
