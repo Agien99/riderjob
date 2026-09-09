@@ -222,3 +222,85 @@ def test_start_session_requires_authentication():
         401,
         403,
     )
+
+def test_get_active_session_success(
+    monkeypatch,
+):
+    user = make_user()
+    rider_session = make_session(
+        user.id
+    )
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_active_session",
+        MagicMock(
+            return_value=rider_session
+        ),
+    )
+
+    response = client.get(
+        "/api/sessions/active"
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert (
+        data["id"]
+        == str(rider_session.id)
+    )
+
+    assert (
+        data["status"]
+        == "active"
+    )
+
+    assert (
+        data["platform"]
+        == "shopeefood"
+    )
+
+
+def test_get_active_session_not_found(
+    monkeypatch,
+):
+    user = make_user()
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_active_session",
+        MagicMock(
+            return_value=None
+        ),
+    )
+
+    response = client.get(
+        "/api/sessions/active"
+    )
+
+    assert response.status_code == 404
+
+    assert response.json()[
+        "detail"
+    ] == (
+        "No active rider session "
+        "found."
+    )

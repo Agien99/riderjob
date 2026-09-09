@@ -66,3 +66,33 @@ def start_session(
         ),
         notes=request.notes,
     )
+
+@router.get(
+    "/active",
+    response_model=SessionResponse,
+)
+def read_active_session(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
+):
+    active_session = (
+        get_active_session(
+            db,
+            current_user.id,
+        )
+    )
+
+    if active_session is None:
+        raise HTTPException(
+            status_code=(
+                status.HTTP_404_NOT_FOUND
+            ),
+            detail=(
+                "No active rider session "
+                "found."
+            ),
+        )
+
+    return active_session
