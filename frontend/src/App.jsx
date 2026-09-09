@@ -4,6 +4,7 @@ import {
   Routes,
 } from 'react-router-dom'
 
+import ProtectedRoute from './components/ProtectedRoute'
 import AppLayout from './layouts/AppLayout'
 
 import ActiveSession from './pages/ActiveSession'
@@ -39,41 +40,43 @@ function App() {
         element={<Register />}
       />
 
-      <Route element={<AppLayout />}>
-        <Route
-          path="/dashboard"
-          element={<Dashboard />}
-        />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppLayout />}>
+          <Route
+            path="/dashboard"
+            element={<Dashboard />}
+          />
 
-        <Route
-          path="/session/start"
-          element={<StartSession />}
-        />
+          <Route
+            path="/session/start"
+            element={<StartSession />}
+          />
 
-        <Route
-          path="/session/active"
-          element={<ActiveSession />}
-        />
+          <Route
+            path="/session/active"
+            element={<ActiveSession />}
+          />
 
-        <Route
-          path="/sessions"
-          element={<SessionHistory />}
-        />
+          <Route
+            path="/sessions"
+            element={<SessionHistory />}
+          />
 
-        <Route
-          path="/sessions/:id"
-          element={<SessionDetail />}
-        />
+          <Route
+            path="/sessions/:id"
+            element={<SessionDetail />}
+          />
 
-        <Route
-          path="/analytics"
-          element={<Analytics />}
-        />
+          <Route
+            path="/analytics"
+            element={<Analytics />}
+          />
 
-        <Route
-          path="/profile"
-          element={<Profile />}
-        />
+          <Route
+            path="/profile"
+            element={<Profile />}
+          />
+        </Route>
       </Route>
 
       <Route
