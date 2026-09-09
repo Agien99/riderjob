@@ -1,0 +1,48 @@
+name: Generate Initial Migration
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate initial migration
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PYTHONPATH: .
+        run: |
+          alembic revision --autogenerate \
+            -m "Create users and rider sessions tables"
+
+      - name: Show generated migration
+        run: |
+          echo "Generated migration:"
+          ls -la alembic/versions/
+          cat alembic/versions/*.py
+
+      - name: Upload migration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: riderjob-initial-migration
+          path: backend/alembic/versions/*.py
