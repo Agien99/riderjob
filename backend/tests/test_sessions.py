@@ -18,6 +18,9 @@ from app.models import (
     RiderSession,
     User,
 )
+from app.schemas.session import (
+    EndSessionRequest,
+)
 
 
 client = TestClient(app)
@@ -303,4 +306,217 @@ def test_get_active_session_not_found(
     ] == (
         "No active rider session "
         "found."
+    )
+
+def test_end_session_success(
+    monkeypatch,
+):
+    user = make_user()
+    rider_session = make_session(
+        user.id
+    )
+
+    completed_session = make_session(
+        user.id
+    )
+
+    completed_session.id = (
+        rider_session.id
+    )
+
+    completed_session.status = (
+        "completed"
+    )
+
+    completed_session.end_time = (
+        datetime.now(timezone.utc)
+    )
+
+    completed_session.end_mileage = (
+        Decimal("5262.00")
+    )
+
+    completed_session.total_orders = 2
+
+    completed_session.gross_income = (
+        Decimal("11.91")
+    )
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=rider_session
+        ),
+    )
+
+    from app.schemas.session import (
+        SessionDetailResponse,
+        SessionMetrics,
+        SessionResponse,
+    )
+
+    session_data = (
+        SessionResponse.model_validate(
+            completed_session
+        )
+    )
+
+    result = SessionDetailResponse(
+        **session_data.model_dump(),
+        metrics=SessionMetrics(
+            distance_km=Decimal(
+                "28.00"
+            ),
+            duration_minutes=86,
+            net_income=Decimal(
+                "11.91"
+            ),
+            income_per_hour=Decimal(
+                "8.31"
+            ),
+            income_per_order=Decimal(
+                "5.96"
+            ),
+            income_per_km=Decimal(
+                "0.43"
+            ),
+        ),
+    )
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "end_session",
+        MagicMock(
+            return_value=result
+        ),
+    )
+
+    response = client.post(
+        (
+            f"/api/sessions/"
+            f"{rider_session.id}/end"
+        ),
+        json={
+            "end_mileage": "5262.00",
+            "total_orders": 2,
+            "gross_income": "11.91",
+            "fuel_cost": "0.00",
+            "other_expenses": "0.00",
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["status"] == "completed"
+
+    assert (
+        data["metrics"]["distance_km"]
+        == "28.00"
+    )
+
+    assert (
+        data["metrics"][
+            "income_per_hour"
+        ]
+        == "8.31"
+    )
+
+
+def test_end_session_not_found(
+    monkeypatch,
+):
+    user = make_user()
+    session_id = uuid.uuid4()
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=None
+        ),
+    )
+
+    response = client.post(
+        f"/api/sessions/{session_id}/end",
+        json={
+            "end_mileage": "5262.00",
+            "total_orders": 2,
+            "gross_income": "11.91",
+        },
+    )
+
+    assert response.status_code == 404
+
+
+def test_end_session_rejects_invalid_mileage(
+    monkeypatch,
+):
+    user = make_user()
+    rider_session = make_session(
+        user.id
+    )
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=rider_session
+        ),
+    )
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "end_session",
+        MagicMock(
+            side_effect=ValueError(
+                "End mileage cannot be "
+                "lower than start mileage."
+            )
+        ),
+    )
+
+    response = client.post(
+        (
+            f"/api/sessions/"
+            f"{rider_session.id}/end"
+        ),
+        json={
+            "end_mileage": "5200.00",
+            "total_orders": 2,
+            "gross_income": "11.91",
+        },
+    )
+
+    assert response.status_code == 400
+
+    assert (
+        "End mileage cannot be lower"
+        in response.json()["detail"]
     )

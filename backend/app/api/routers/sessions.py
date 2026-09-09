@@ -12,14 +12,19 @@ from app.api.dependencies import (
 from app.database import get_db
 from app.models import User
 from app.schemas.session import (
+    EndSessionRequest,
+    SessionDetailResponse,
     SessionResponse,
     StartSessionRequest,
 )
 from app.services.session_service import (
     create_session,
+    end_session,
     get_active_session,
+    get_session_by_id,
 )
 
+from uuid import UUID
 
 router = APIRouter(
     prefix="/api/sessions",
@@ -96,3 +101,48 @@ def read_active_session(
         )
 
     return active_session
+
+@router.post(
+    "/{session_id}/end",
+    response_model=SessionDetailResponse,
+)
+def complete_session(
+    session_id: UUID,
+    request: EndSessionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
+):
+    rider_session = (
+        get_session_by_id(
+            db,
+            session_id,
+            current_user.id,
+        )
+    )
+
+    if rider_session is None:
+        raise HTTPException(
+            status_code=(
+                status.HTTP_404_NOT_FOUND
+            ),
+            detail=(
+                "Rider session not found."
+            ),
+        )
+
+    try:
+        return end_session(
+            db=db,
+            rider_session=rider_session,
+            request=request,
+        )
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=(
+                status.HTTP_400_BAD_REQUEST
+            ),
+            detail=str(error),
+        ) from error
