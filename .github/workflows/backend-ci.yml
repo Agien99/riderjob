@@ -38,7 +38,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PYTHONPATH: .
         run: python scripts/check_database.py
-        
+
       - name: Apply database migrations
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
@@ -48,4 +48,5 @@ jobs:
       - name: Run tests
         env:
           PYTHONPATH: .
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
         run: python -m pytest -v
