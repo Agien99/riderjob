@@ -36,6 +36,7 @@ jobs:
       - name: Verify Neon database connection
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PYTHONPATH: .
         run: python scripts/test_database.py
 
       - name: Run tests
