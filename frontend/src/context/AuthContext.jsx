@@ -1,6 +1,4 @@
 import {
-  createContext,
-  useContext,
   useEffect,
   useState,
 } from 'react'
@@ -10,8 +8,7 @@ import {
   loginUser,
   registerUser,
 } from '../services/authService'
-
-const AuthContext = createContext(null)
+import { AuthContext } from './useAuth'
 
 const TOKEN_KEY =
   'riderjob_access_token'
@@ -118,17 +115,4 @@ export function AuthProvider({
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth() {
-  const context =
-    useContext(AuthContext)
-
-  if (!context) {
-    throw new Error(
-      'useAuth must be used inside AuthProvider.',
-    )
-  }
-
-  return context
 }
