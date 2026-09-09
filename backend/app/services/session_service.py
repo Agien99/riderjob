@@ -170,8 +170,6 @@ def end_session(
     )
 
     return SessionDetailResponse(
-        **SessionDetailResponse.model_validate(
-            rider_session
-        ).model_dump(),
+        **session_data.model_dump(),
         metrics=metrics,
     )
