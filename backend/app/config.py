@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     environment: str = "development"
 
     frontend_url: str = "https://agien99.github.io"
+    database_url: str | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
