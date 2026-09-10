@@ -35,8 +35,6 @@ export function endRiderSession(
   )
 }
 
-import apiRequest from './api'
-
 export function startRiderSession(
   sessionData,
 ) {
