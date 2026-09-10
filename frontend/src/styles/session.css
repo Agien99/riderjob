@@ -1,69 +1,93 @@
+/* =========================================
+   RiderJob Session Pages
+   ========================================= */
+
+
+/* =========================================
+   Page Container
+   ========================================= */
+
 .session-page {
   display: flex;
   justify-content: center;
+
   width: 100%;
 }
+
+
+/* =========================================
+   Session Card
+   ========================================= */
 
 .session-card {
   width: 100%;
   max-width: 760px;
 
   padding: 28px;
-
-  border: 1px solid
-    var(--color-border);
-
-  border-radius:
-    var(--border-radius-lg);
-
-  background:
-    rgba(13, 20, 36, 0.82);
 }
 
 .session-card-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 20px;
+
+  gap: var(--space-xl);
 
   margin-bottom: 28px;
 }
 
-.session-eyebrow {
-  display: block;
-
-  margin-bottom: 8px;
-
-  color: var(--color-primary);
-
-  font-size: 11px;
-  font-weight: 700;
-
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.session-card-header h1 {
+.session-title {
   margin: 0;
 
+  color:
+    var(--color-text);
+
   font-size: 26px;
+
+  line-height: 1.2;
 }
 
-.session-card-header p {
-  margin: 8px 0 0;
+.session-description {
+  margin:
+    var(--space-sm)
+    0
+    0;
 
   color:
-    var(--color-text-muted);
+    var(--color-text-secondary);
 
-  font-size: 13px;
+  font-size:
+    var(--font-size-sm);
+
   line-height: 1.6;
 }
+
+
+/* =========================================
+   Loading / Empty State
+   ========================================= */
+
+.session-state {
+  width: 100%;
+  max-width: 760px;
+}
+
+
+/* =========================================
+   Form
+   ========================================= */
 
 .session-form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+
+  gap: var(--space-xl);
 }
+
+
+/* =========================================
+   Platform Selector
+   ========================================= */
 
 .platform-fieldset {
   padding: 0;
@@ -72,44 +96,37 @@
   border: 0;
 }
 
-.platform-fieldset legend,
-.session-field label {
-  display: block;
-
-  margin-bottom: 10px;
-
-  color:
-    var(--color-text-secondary);
-
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.session-field label span {
-  color:
-    var(--color-text-muted);
-
-  font-weight: 400;
+.platform-fieldset legend {
+  margin-bottom:
+    var(--space-md);
 }
 
 .platform-options {
   display: grid;
-  grid-template-columns:
-    repeat(3, 1fr);
 
-  gap: 12px;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: var(--space-md);
 }
 
 .platform-option {
+  position: relative;
+
   display: flex;
   align-items: center;
   justify-content: center;
 
   min-height: 56px;
 
-  padding: 12px 14px;
+  padding:
+    12px
+    14px;
 
-  border: 1px solid
+  overflow: hidden;
+
+  border:
+    1px solid
     var(--color-border);
 
   border-radius:
@@ -121,6 +138,11 @@
   color:
     var(--color-text-secondary);
 
+  font-size:
+    var(--font-size-md);
+
+  font-weight: 600;
+
   cursor: pointer;
 
   transition:
@@ -129,6 +151,27 @@
     background
       var(--transition-fast),
     color
+      var(--transition-fast),
+    transform
+      var(--transition-fast);
+}
+
+.platform-option::before {
+  position: absolute;
+
+  top: 0;
+  right: 0;
+  left: 0;
+
+  height: 3px;
+
+  background:
+    transparent;
+
+  content: '';
+
+  transition:
+    background
       var(--transition-fast);
 }
 
@@ -142,287 +185,241 @@
 
 .platform-option:hover {
   border-color:
-    rgba(59, 130, 246, 0.32);
+    var(--color-border-hover);
+
+  color:
+    var(--color-text);
+
+  transform:
+    translateY(-1px);
 }
+
+.platform-option:has(
+  input:focus-visible
+) {
+  outline:
+    2px solid
+    var(--color-primary);
+
+  outline-offset: 2px;
+}
+
+.platform-option:has(
+  input:disabled
+) {
+  cursor: not-allowed;
+
+  opacity: 0.6;
+
+  transform: none;
+}
+
+
+/* Selected */
 
 .platform-option-selected {
   border-color:
-    rgba(59, 130, 246, 0.56);
+    var(--color-primary-border);
 
   background:
-    rgba(59, 130, 246, 0.1);
-
-  color: #ffffff;
-}
-
-.session-field input,
-.session-field textarea {
-  width: 100%;
-
-  padding: 13px 14px;
-
-  border: 1px solid
-    var(--color-border);
-
-  border-radius:
-    var(--border-radius-md);
-
-  outline: none;
-
-  background:
-    rgba(7, 11, 20, 0.65);
-
-  color: var(--color-text);
-
-  font: inherit;
-}
-
-.session-field textarea {
-  resize: vertical;
-}
-
-.session-field input:focus,
-.session-field textarea:focus {
-  border-color:
-    rgba(59, 130, 246, 0.65);
-}
-
-.mileage-input {
-  position: relative;
-}
-
-.mileage-input input {
-  padding-right: 60px;
-}
-
-.mileage-input span {
-  position: absolute;
-
-  top: 50%;
-  right: 16px;
+    var(--color-primary-soft);
 
   color:
-    var(--color-text-muted);
-
-  font-size: 11px;
-  font-weight: 700;
-
-  transform:
-    translateY(-50%);
+    #ffffff;
 }
 
-.session-error {
-  padding: 12px 14px;
 
-  border: 1px solid
-    rgba(239, 68, 68, 0.3);
+/* Platform Identity */
 
-  border-radius:
-    var(--border-radius-md);
+.platform-shopeefood
+.platform-option-selected,
+.platform-option-selected.platform-shopeefood {
+  border-color:
+    rgba(238, 77, 45, 0.42);
 
   background:
-    rgba(239, 68, 68, 0.08);
-
-  color: #f87171;
-
-  font-size: 12px;
+    rgba(238, 77, 45, 0.1);
 }
 
-.session-primary-button {
-  min-height: 48px;
+.platform-option-selected.platform-shopeefood::before {
+  background:
+    var(--color-shopeefood);
+}
 
-  padding: 0 20px;
-
-  border: 0;
-
-  border-radius:
-    var(--border-radius-md);
+.platform-option-selected.platform-grabfood {
+  border-color:
+    rgba(0, 177, 79, 0.42);
 
   background:
-    var(--color-primary);
-
-  color: #ffffff;
-
-  font-weight: 700;
-
-  cursor: pointer;
+    rgba(0, 177, 79, 0.1);
 }
 
-.session-primary-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+.platform-option-selected.platform-grabfood::before {
+  background:
+    var(--color-grabfood);
 }
 
-@media (max-width: 600px) {
-  .session-card {
-    padding: 20px;
-  }
-
-  .session-card-header h1 {
-    font-size: 22px;
-  }
-
-  .platform-options {
-    grid-template-columns: 1fr;
-  }
-}
-
-.active-session-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-
-  padding: 7px 11px;
-
-  border: 1px solid
-    rgba(34, 197, 94, 0.28);
-
-  border-radius: 999px;
+.platform-option-selected.platform-lalamove {
+  border-color:
+    rgba(255, 103, 29, 0.42);
 
   background:
-    rgba(34, 197, 94, 0.08);
-
-  color: #4ade80;
-
-  font-size: 11px;
-  font-weight: 700;
+    rgba(255, 103, 29, 0.1);
 }
 
-.active-session-badge span {
-  width: 7px;
-  height: 7px;
-
-  border-radius: 50%;
-
-  background: #22c55e;
+.platform-option-selected.platform-lalamove::before {
+  background:
+    var(--color-lalamove);
 }
+
+
+/* =========================================
+   Active Session Summary
+   ========================================= */
 
 .active-session-summary {
   display: grid;
-  grid-template-columns:
-    repeat(3, 1fr);
 
-  gap: 12px;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: var(--space-md);
 
   margin-bottom: 30px;
 }
 
 .active-session-summary > div {
-  padding: 16px;
+  min-width: 0;
 
-  border: 1px solid
+  padding:
+    var(--space-lg);
+
+  border:
+    1px solid
     var(--color-border);
 
   border-radius:
     var(--border-radius-md);
 
   background:
-    rgba(255, 255, 255, 0.025);
+    var(--color-surface-tertiary);
 }
 
 .active-session-summary span {
   display: block;
 
-  margin-bottom: 7px;
+  margin-bottom:
+    7px;
 
   color:
     var(--color-text-muted);
 
-  font-size: 11px;
+  font-size:
+    var(--font-size-xs);
 }
 
 .active-session-summary strong {
+  display: block;
+
+  overflow-wrap: anywhere;
+
   color:
     var(--color-text);
 
-  font-size: 14px;
+  font-size:
+    var(--font-size-md);
+}
+
+
+/* =========================================
+   End Ride Section
+   ========================================= */
+
+.session-section-heading {
+  padding-bottom:
+    var(--space-lg);
+
+  border-bottom:
+    1px solid
+    var(--color-border);
 }
 
 .session-section-heading h2 {
   margin: 0;
 
-  font-size: 18px;
+  color:
+    var(--color-text);
+
+  font-size:
+    var(--font-size-xl);
 }
 
 .session-section-heading p {
-  margin: 6px 0 0;
+  margin:
+    6px
+    0
+    0;
 
   color:
     var(--color-text-muted);
 
-  font-size: 12px;
+  font-size:
+    var(--font-size-sm);
 }
+
+
+/* =========================================
+   Form Grid
+   ========================================= */
 
 .session-form-grid {
   display: grid;
 
   grid-template-columns:
-    repeat(2, 1fr);
+    repeat(2, minmax(0, 1fr));
 
-  gap: 18px;
+  gap:
+    18px;
 }
 
-.currency-input {
-  position: relative;
-}
 
-.currency-input span {
-  position: absolute;
-
-  top: 50%;
-  left: 14px;
-
-  color:
-    var(--color-text-muted);
-
-  font-size: 11px;
-  font-weight: 700;
-
-  transform:
-    translateY(-50%);
-
-  pointer-events: none;
-}
-
-.currency-input input {
-  padding-left: 48px;
-}
-
-.session-end-button {
-  min-height: 48px;
-
-  padding: 0 20px;
-
-  border: 1px solid
-    rgba(239, 68, 68, 0.35);
-
-  border-radius:
-    var(--border-radius-md);
-
-  background:
-    rgba(239, 68, 68, 0.12);
-
-  color: #f87171;
-
-  font-weight: 700;
-
-  cursor: pointer;
-}
-
-.session-end-button:hover {
-  background:
-    rgba(239, 68, 68, 0.18);
-}
-
-.session-end-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
+/* =========================================
+   Mobile
+   ========================================= */
 
 @media (max-width: 600px) {
+  .session-card {
+    padding:
+      var(--space-lg);
+  }
+
+  .session-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+
+    gap:
+      var(--space-lg);
+
+    margin-bottom:
+      var(--space-xl);
+  }
+
+  .session-title {
+    font-size:
+      22px;
+  }
+
+  .platform-options {
+    grid-template-columns:
+      1fr;
+  }
+
   .active-session-summary {
     grid-template-columns:
       1fr;
+
+    margin-bottom:
+      var(--space-xl);
   }
 
   .session-form-grid {

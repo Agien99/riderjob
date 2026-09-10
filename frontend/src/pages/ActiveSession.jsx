@@ -3,6 +3,7 @@ import {
   useMemo,
   useState,
 } from 'react'
+
 import {
   useNavigate,
 } from 'react-router-dom'
@@ -325,7 +326,10 @@ function ActiveSession() {
   if (loading) {
     return (
       <section className="session-page">
-        <div className="session-card">
+        <div
+          className="ui-state session-state"
+          aria-live="polite"
+        >
           <p>
             Loading active session...
           </p>
@@ -338,9 +342,12 @@ function ActiveSession() {
   if (!riderSession) {
     return (
       <section className="session-page">
-        <div className="session-card">
+        <div className="ui-state session-state">
+          <h2>No Active Ride</h2>
+
           <p>
-            No active rider session.
+            There is currently no
+            active rider session.
           </p>
         </div>
       </section>
@@ -350,14 +357,14 @@ function ActiveSession() {
 
   return (
     <section className="session-page">
-      <div className="session-card">
+      <div className="session-card ui-card">
         <div className="session-card-header">
           <div>
-            <span className="session-eyebrow">
+            <span className="ui-page-eyebrow">
               Active Ride
             </span>
 
-            <h1>
+            <h1 className="session-title">
               {
                 platformLabels[
                   riderSession
@@ -368,14 +375,26 @@ function ActiveSession() {
               }
             </h1>
 
-            <p>
+            <p className="session-description">
               Your rider session is
               currently active.
             </p>
           </div>
 
-          <span className="active-session-badge">
-            <span />
+          <span
+            className="
+              ui-badge
+              ui-badge-success
+            "
+          >
+            <span
+              className="
+                ui-status-dot
+                ui-status-dot-success
+              "
+              aria-hidden="true"
+            />
+
             Active
           </span>
         </div>
@@ -436,15 +455,20 @@ function ActiveSession() {
             </p>
           </div>
 
-          <div className="session-field">
+          <div className="ui-field">
             <label
+              className="ui-field-label"
               htmlFor="endMileage"
             >
               Ending Mileage
             </label>
 
-            <div className="mileage-input">
+            <div className="ui-input-wrapper">
               <input
+                className="
+                  ui-input
+                  ui-input-has-suffix
+                "
                 id="endMileage"
                 type="number"
                 min={
@@ -471,21 +495,23 @@ function ActiveSession() {
                 }
               />
 
-              <span>
+              <span className="ui-input-suffix">
                 KM
               </span>
             </div>
           </div>
 
           <div className="session-form-grid">
-            <div className="session-field">
+            <div className="ui-field">
               <label
+                className="ui-field-label"
                 htmlFor="totalOrders"
               >
                 Total Orders
               </label>
 
               <input
+                className="ui-input"
                 id="totalOrders"
                 type="number"
                 min="0"
@@ -510,19 +536,24 @@ function ActiveSession() {
               />
             </div>
 
-            <div className="session-field">
+            <div className="ui-field">
               <label
+                className="ui-field-label"
                 htmlFor="grossIncome"
               >
                 Gross Income
               </label>
 
-              <div className="currency-input">
-                <span>
+              <div className="ui-input-wrapper">
+                <span className="ui-input-prefix">
                   RM
                 </span>
 
                 <input
+                  className="
+                    ui-input
+                    ui-input-has-prefix
+                  "
                   id="grossIncome"
                   type="number"
                   min="0"
@@ -548,19 +579,24 @@ function ActiveSession() {
               </div>
             </div>
 
-            <div className="session-field">
+            <div className="ui-field">
               <label
+                className="ui-field-label"
                 htmlFor="fuelCost"
               >
                 Fuel Cost
               </label>
 
-              <div className="currency-input">
-                <span>
+              <div className="ui-input-wrapper">
+                <span className="ui-input-prefix">
                   RM
                 </span>
 
                 <input
+                  className="
+                    ui-input
+                    ui-input-has-prefix
+                  "
                   id="fuelCost"
                   type="number"
                   min="0"
@@ -586,19 +622,24 @@ function ActiveSession() {
               </div>
             </div>
 
-            <div className="session-field">
+            <div className="ui-field">
               <label
+                className="ui-field-label"
                 htmlFor="otherExpenses"
               >
                 Other Expenses
               </label>
 
-              <div className="currency-input">
-                <span>
+              <div className="ui-input-wrapper">
+                <span className="ui-input-prefix">
                   RM
                 </span>
 
                 <input
+                  className="
+                    ui-input
+                    ui-input-has-prefix
+                  "
                   id="otherExpenses"
                   type="number"
                   min="0"
@@ -625,21 +666,25 @@ function ActiveSession() {
             </div>
           </div>
 
-          <div className="session-field">
+          <div className="ui-field">
             <label
+              className="ui-field-label"
               htmlFor="endNotes"
             >
               Notes
-              <span>
+
+              <span className="ui-field-hint">
                 {' '}
                 (Optional)
               </span>
             </label>
 
             <textarea
+              className="ui-textarea"
               id="endNotes"
               rows="4"
               maxLength="2000"
+              placeholder="Anything useful about this session..."
               value={notes}
               onChange={(
                 event,
@@ -658,7 +703,10 @@ function ActiveSession() {
 
           {error && (
             <div
-              className="session-error"
+              className="
+                ui-alert
+                ui-alert-error
+              "
               role="alert"
             >
               {error}
@@ -666,7 +714,11 @@ function ActiveSession() {
           )}
 
           <button
-            className="session-end-button"
+            className="
+              ui-button
+              ui-button-danger
+              ui-button-block
+            "
             type="submit"
             disabled={
               submitting

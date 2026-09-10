@@ -2,6 +2,7 @@ import {
   useEffect,
   useState,
 } from 'react'
+
 import {
   useNavigate,
 } from 'react-router-dom'
@@ -152,10 +153,12 @@ function StartSession() {
   if (checkingActiveSession) {
     return (
       <section className="session-page">
-        <div className="session-card">
+        <div
+          className="ui-state session-state"
+          aria-live="polite"
+        >
           <p>
-            Checking active
-            session...
+            Checking active session...
           </p>
         </div>
       </section>
@@ -165,18 +168,18 @@ function StartSession() {
 
   return (
     <section className="session-page">
-      <div className="session-card">
+      <div className="session-card ui-card">
         <div className="session-card-header">
           <div>
-            <span className="session-eyebrow">
+            <span className="ui-page-eyebrow">
               New Ride
             </span>
 
-            <h1>
+            <h1 className="session-title">
               Start Rider Session
             </h1>
 
-            <p>
+            <p className="session-description">
               Select your platform and
               enter your current
               motorcycle mileage.
@@ -189,7 +192,7 @@ function StartSession() {
           onSubmit={handleSubmit}
         >
           <fieldset className="platform-fieldset">
-            <legend>
+            <legend className="ui-field-label">
               Delivery Platform
             </legend>
 
@@ -200,8 +203,11 @@ function StartSession() {
                     className={
                       platform ===
                       item.value
-                        ? 'platform-option platform-option-selected'
-                        : 'platform-option'
+                        ? `platform-option
+                          platform-option-selected
+                          platform-${item.value}`
+                        : `platform-option
+                          platform-${item.value}`
                     }
                     key={item.value}
                   >
@@ -224,6 +230,7 @@ function StartSession() {
                             .value,
                         )
                       }
+                      disabled={loading}
                     />
 
                     <span>
@@ -235,15 +242,20 @@ function StartSession() {
             </div>
           </fieldset>
 
-          <div className="session-field">
+          <div className="ui-field">
             <label
+              className="ui-field-label"
               htmlFor="startMileage"
             >
               Starting Mileage
             </label>
 
-            <div className="mileage-input">
+            <div className="ui-input-wrapper">
               <input
+                className="
+                  ui-input
+                  ui-input-has-suffix
+                "
                 id="startMileage"
                 type="number"
                 min="0"
@@ -263,20 +275,27 @@ function StartSession() {
                 disabled={loading}
               />
 
-              <span>KM</span>
+              <span className="ui-input-suffix">
+                KM
+              </span>
             </div>
           </div>
 
-          <div className="session-field">
-            <label htmlFor="notes">
+          <div className="ui-field">
+            <label
+              className="ui-field-label"
+              htmlFor="notes"
+            >
               Notes
-              <span>
+
+              <span className="ui-field-hint">
                 {' '}
                 (Optional)
               </span>
             </label>
 
             <textarea
+              className="ui-textarea"
               id="notes"
               rows="4"
               maxLength="2000"
@@ -295,7 +314,10 @@ function StartSession() {
 
           {error && (
             <div
-              className="session-error"
+              className="
+                ui-alert
+                ui-alert-error
+              "
               role="alert"
             >
               {error}
@@ -303,7 +325,11 @@ function StartSession() {
           )}
 
           <button
-            className="session-primary-button"
+            className="
+              ui-button
+              ui-button-primary
+              ui-button-block
+            "
             type="submit"
             disabled={loading}
           >
