@@ -284,6 +284,77 @@
   color: #60a5fa;
 }
 
+.history-filter-field input[type='date'] {
+  position: relative;
+  min-height: 42px;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 10px 40px 10px 12px;
+  background:
+    linear-gradient(
+      180deg,
+      #0d1525 0%,
+      #0a1220 100%
+    );
+  color: #e2e8f0;
+  color-scheme: dark;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.history-filter-field input[type='date']:hover {
+  border-color: #475569;
+  background:
+    linear-gradient(
+      180deg,
+      #111b2d 0%,
+      #0c1524 100%
+    );
+}
+
+.history-filter-field input[type='date']:focus {
+  border-color: #3b82f6;
+  box-shadow:
+    0 0 0 3px
+      rgba(59, 130, 246, 0.12);
+}
+
+.history-filter-field
+  input[type='date']
+ ::-webkit-calendar-picker-indicator {
+  padding: 6px;
+  border-radius: 7px;
+  cursor: pointer;
+  opacity: 0.75;
+  filter:
+    invert(69%)
+    sepia(11%)
+    saturate(626%)
+    hue-rotate(176deg)
+    brightness(91%)
+    contrast(88%);
+}
+
+.history-filter-field
+  input[type='date']
+ ::-webkit-calendar-picker-indicator:hover {
+  background:
+    rgba(59, 130, 246, 0.12);
+  opacity: 1;
+}
+
+.history-filter-field:has(
+  input[type='date']
+) {
+  border-radius: 12px;
+  padding: 10px;
+  background:
+    rgba(15, 23, 42, 0.45);
+}
+
 @media (max-width: 1000px) {
   .history-filter-grid {
     grid-template-columns:
@@ -328,5 +399,18 @@
 
   .history-clear-button {
     width: 100%;
+  }
+
+  .history-filter-field:has(
+    input[type='date']
+  ) {
+    padding: 8px;
+  }
+
+  .history-filter-field input[type='date'] {
+    min-height: 44px;
+    padding:
+      11px 38px
+      11px 11px;
   }
 }
