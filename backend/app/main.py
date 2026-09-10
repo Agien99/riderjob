@@ -7,6 +7,9 @@ from app.api.routers.auth import (
 from app.api.routers.health import (
     router as health_router,
 )
+from app.api.routers.dashboard import (
+    router as dashboard_router,
+)
 from app.api.routers.sessions import (
     router as sessions_router,
 )
@@ -40,6 +43,10 @@ app.include_router(
 
 app.include_router(
     sessions_router
+)
+
+app.include_router(
+    dashboard_router
 )
 
 
