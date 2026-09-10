@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 import {
@@ -31,6 +32,26 @@ function SessionHistory() {
     setError,
   ] = useState('')
 
+  const [
+    platformFilter,
+    setPlatformFilter,
+  ] = useState('all')
+
+  const [
+    fromDate,
+    setFromDate,
+  ] = useState('')
+
+  const [
+    toDate,
+    setToDate,
+  ] = useState('')
+
+  const [
+    search,
+    setSearch,
+  ] = useState('')
+
   useEffect(() => {
     async function loadHistory() {
       try {
@@ -53,6 +74,75 @@ function SessionHistory() {
 
     loadHistory()
   }, [])
+
+  const filteredSessions =
+    useMemo(() => {
+      const normalizedSearch =
+        search.trim().toLowerCase()
+
+      return sessions.filter(
+        (session) => {
+          if (
+            platformFilter !== 'all' &&
+            session.platform !==
+              platformFilter
+          ) {
+            return false
+          }
+
+          if (
+            fromDate &&
+            session.session_date <
+              fromDate
+          ) {
+            return false
+          }
+
+          if (
+            toDate &&
+            session.session_date >
+              toDate
+          ) {
+            return false
+          }
+
+          if (normalizedSearch) {
+            const notes = (
+              session.notes || ''
+            ).toLowerCase()
+
+            if (
+              !notes.includes(
+                normalizedSearch,
+              )
+            ) {
+              return false
+            }
+          }
+
+          return true
+        },
+      )
+    }, [
+      sessions,
+      platformFilter,
+      fromDate,
+      toDate,
+      search,
+    ])
+
+  const hasFilters =
+    platformFilter !== 'all' ||
+    fromDate !== '' ||
+    toDate !== '' ||
+    search.trim() !== ''
+
+  function clearFilters() {
+    setPlatformFilter('all')
+    setFromDate('')
+    setToDate('')
+    setSearch('')
+  }
 
   function formatPlatform(platform) {
     const labels = {
@@ -201,103 +291,244 @@ function SessionHistory() {
 
       {!error &&
         sessions.length > 0 && (
-          <div className="history-table-card">
-            <div className="history-table-wrapper">
-              <table className="history-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Platform</th>
-                    <th>Time</th>
-                    <th>Orders</th>
-                    <th>Gross</th>
-                    <th>Fuel</th>
-                    <th>Status</th>
-                    <th />
-                  </tr>
-                </thead>
+          <>
+            <section className="history-filters">
+              <div className="history-filter-header">
+                <div>
+                  <p className="history-eyebrow">
+                    FILTER RECORDS
+                  </p>
 
-                <tbody>
-                  {sessions.map(
-                    (session) => (
-                      <tr
-                        key={
-                          session.id
-                        }
-                      >
-                        <td>
-                          {formatDate(
-                            session.session_date,
-                          )}
-                        </td>
+                  <h2>
+                    Find a Session
+                  </h2>
+                </div>
 
-                        <td>
-                          <span
-                            className={
-                              `platform-badge ` +
-                              `platform-${session.platform}`
-                            }
-                          >
-                            {formatPlatform(
-                              session.platform,
-                            )}
-                          </span>
-                        </td>
+                <span className="history-result-count">
+                  {filteredSessions.length}
+                  {' '}
+                  {filteredSessions.length === 1
+                    ? 'session'
+                    : 'sessions'}
+                </span>
+              </div>
 
-                        <td>
-                          {formatTime(
-                            session.start_time,
-                          )}
-                          {' – '}
-                          {formatTime(
-                            session.end_time,
-                          )}
-                        </td>
+              <div className="history-filter-grid">
+                <label className="history-filter-field">
+                  <span>
+                    Platform
+                  </span>
 
-                        <td>
-                          {
-                            session.total_orders
-                          }
-                        </td>
+                  <select
+                    value={platformFilter}
+                    onChange={(event) =>
+                      setPlatformFilter(
+                        event.target.value,
+                      )
+                    }
+                  >
+                    <option value="all">
+                      All Platforms
+                    </option>
 
-                        <td>
-                          {formatMoney(
-                            session.gross_income,
-                          )}
-                        </td>
+                    <option value="shopeefood">
+                      ShopeeFood
+                    </option>
 
-                        <td>
-                          {formatMoney(
-                            session.fuel_cost,
-                          )}
-                        </td>
+                    <option value="grabfood">
+                      GrabFood
+                    </option>
 
-                        <td>
-                          <span className="completed-badge">
-                            Completed
-                          </span>
-                        </td>
+                    <option value="lalamove">
+                      Lalamove
+                    </option>
+                  </select>
+                </label>
 
-                        <td>
-                          <button
-                            type="button"
-                            className="history-view-button"
-                            onClick={() =>
-                              navigate(
-                                `/sessions/${session.id}`,
-                              )
-                            }
-                          >
-                            View
-                          </button>
-                        </td>
+                <label className="history-filter-field">
+                  <span>
+                    From Date
+                  </span>
+
+                  <input
+                    type="date"
+                    value={fromDate}
+                    max={toDate || undefined}
+                    onChange={(event) =>
+                      setFromDate(
+                        event.target.value,
+                      )
+                    }
+                  />
+                </label>
+
+                <label className="history-filter-field">
+                  <span>
+                    To Date
+                  </span>
+
+                  <input
+                    type="date"
+                    value={toDate}
+                    min={fromDate || undefined}
+                    onChange={(event) =>
+                      setToDate(
+                        event.target.value,
+                      )
+                    }
+                  />
+                </label>
+
+                <label className="history-filter-field">
+                  <span>
+                    Search Notes
+                  </span>
+
+                  <input
+                    type="search"
+                    placeholder="e.g. morning, rain..."
+                    value={search}
+                    onChange={(event) =>
+                      setSearch(
+                        event.target.value,
+                      )
+                    }
+                  />
+                </label>
+              </div>
+
+              {hasFilters && (
+                <div className="history-filter-actions">
+                  <button
+                    type="button"
+                    className="history-clear-button"
+                    onClick={clearFilters}
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              )}
+            </section>
+
+            {filteredSessions.length ===
+            0 ? (
+              <div className="history-no-results">
+                <h2>
+                  No matching sessions
+                </h2>
+
+                <p>
+                  Try changing or clearing
+                  your current filters.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                >
+                  Clear Filters
+                </button>
+              </div>
+            ) : (
+              <div className="history-table-card">
+                <div className="history-table-wrapper">
+                  <table className="history-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Platform</th>
+                        <th>Time</th>
+                        <th>Orders</th>
+                        <th>Gross</th>
+                        <th>Fuel</th>
+                        <th>Status</th>
+                        <th />
                       </tr>
-                    ),
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                    </thead>
+
+                    <tbody>
+                      {filteredSessions.map(
+                        (session) => (
+                          <tr
+                            key={
+                              session.id
+                            }
+                          >
+                            <td>
+                              {formatDate(
+                                session.session_date,
+                              )}
+                            </td>
+
+                            <td>
+                              <span
+                                className={
+                                  `platform-badge ` +
+                                  `platform-${session.platform}`
+                                }
+                              >
+                                {formatPlatform(
+                                  session.platform,
+                                )}
+                              </span>
+                            </td>
+
+                            <td>
+                              {formatTime(
+                                session.start_time,
+                              )}
+                              {' – '}
+                              {formatTime(
+                                session.end_time,
+                              )}
+                            </td>
+
+                            <td>
+                              {
+                                session.total_orders
+                              }
+                            </td>
+
+                            <td>
+                              {formatMoney(
+                                session.gross_income,
+                              )}
+                            </td>
+
+                            <td>
+                              {formatMoney(
+                                session.fuel_cost,
+                              )}
+                            </td>
+
+                            <td>
+                              <span className="completed-badge">
+                                Completed
+                              </span>
+                            </td>
+
+                            <td>
+                              <button
+                                type="button"
+                                className="history-view-button"
+                                onClick={() =>
+                                  navigate(
+                                    `/sessions/${session.id}`,
+                                  )
+                                }
+                              >
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        ),
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
         )}
     </main>
   )
