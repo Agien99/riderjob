@@ -1,8 +1,8 @@
 import {
-  useCallback,
   useEffect,
   useState,
 } from 'react'
+
 import {
   useNavigate,
 } from 'react-router-dom'
@@ -53,27 +53,41 @@ function Dashboard() {
     setError,
   ] = useState('')
 
-  const loadDashboard =
-    useCallback(async () => {
-      try {
-        const data =
-          await getDashboard(period)
+  useEffect(() => {
+    let cancelled = false
+
+    getDashboard(period)
+      .then((data) => {
+        if (cancelled) {
+          return
+        }
 
         setDashboard(data)
         setError('')
-      } catch (err) {
+      })
+      .catch((err) => {
+        if (cancelled) {
+          return
+        }
+
         setError(
           err.message ||
             'Unable to load dashboard.',
         )
-      } finally {
-        setLoading(false)
-      }
-    }, [period])
+      })
+      .finally(() => {
+        if (cancelled) {
+          return
+        }
 
-  useEffect(() => {
-    loadDashboard()
-  }, [loadDashboard])
+        setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [period])
+
 
   function handlePeriodChange(
     nextPeriod,
@@ -89,11 +103,24 @@ function Dashboard() {
 
 
   async function handleRetry() {
-    setLoading(true)
-    setError('')
+    try {
+      setLoading(true)
+      setError('')
 
-    await loadDashboard()
+      const data =
+        await getDashboard(period)
+
+      setDashboard(data)
+    } catch (err) {
+      setError(
+        err.message ||
+          'Unable to load dashboard.',
+      )
+    } finally {
+      setLoading(false)
+    }
   }
+
 
   function formatMoney(value) {
     const amount = Number(
@@ -102,6 +129,7 @@ function Dashboard() {
 
     return `RM ${amount.toFixed(2)}`
   }
+
 
   function formatNumber(
     value,
@@ -113,6 +141,7 @@ function Dashboard() {
 
     return amount.toFixed(decimals)
   }
+
 
   function formatHours(value) {
     const hours = Number(
@@ -148,6 +177,7 @@ function Dashboard() {
     )
   }
 
+
   function formatDate(value) {
     if (!value) {
       return '-'
@@ -167,6 +197,7 @@ function Dashboard() {
     )
   }
 
+
   function formatPlatform(platform) {
     const labels = {
       shopeefood: 'ShopeeFood',
@@ -181,6 +212,7 @@ function Dashboard() {
     )
   }
 
+
   function getPeriodLabel() {
     return (
       PERIODS.find(
@@ -190,6 +222,7 @@ function Dashboard() {
     )
   }
 
+
   const metrics =
     dashboard?.metrics
 
@@ -198,6 +231,7 @@ function Dashboard() {
 
   const recentSessions =
     dashboard?.recent_sessions || []
+
 
   return (
     <main className="dashboard-page">
@@ -229,6 +263,7 @@ function Dashboard() {
         </button>
       </header>
 
+
       <section className="dashboard-period-section">
         <div className="dashboard-period-tabs">
           {PERIODS.map(
@@ -258,7 +293,9 @@ function Dashboard() {
             {formatDate(
               dashboard.start_date,
             )}
+
             {' — '}
+
             {formatDate(
               dashboard.end_date,
             )}
@@ -266,9 +303,12 @@ function Dashboard() {
         )}
       </section>
 
+
       {error && (
         <div className="dashboard-error">
-          {error}
+          <span>
+            {error}
+          </span>
 
           <button
             type="button"
@@ -279,16 +319,20 @@ function Dashboard() {
         </div>
       )}
 
+
       {loading && (
         <div className="dashboard-loading">
-          Loading {getPeriodLabel()}
-          {' '}performance...
+          Loading{' '}
+          {getPeriodLabel()}{' '}
+          performance...
         </div>
       )}
 
+
       {!loading &&
         !error &&
-        dashboard && (
+        dashboard &&
+        metrics && (
           <>
             <section className="dashboard-metrics">
               <article className="dashboard-card dashboard-card-primary">
@@ -310,6 +354,7 @@ function Dashboard() {
                 </p>
               </article>
 
+
               <article className="dashboard-card">
                 <span className="dashboard-card-label">
                   Gross Earnings
@@ -325,6 +370,7 @@ function Dashboard() {
                   Before expenses
                 </small>
               </article>
+
 
               <article className="dashboard-card">
                 <span className="dashboard-card-label">
@@ -348,6 +394,7 @@ function Dashboard() {
                 </small>
               </article>
 
+
               <article className="dashboard-card">
                 <span className="dashboard-card-label">
                   Distance
@@ -357,6 +404,7 @@ function Dashboard() {
                   {formatNumber(
                     metrics.total_distance_km,
                   )}
+
                   {' km'}
                 </strong>
 
@@ -364,6 +412,7 @@ function Dashboard() {
                   Total riding distance
                 </small>
               </article>
+
 
               <article className="dashboard-card">
                 <span className="dashboard-card-label">
@@ -381,18 +430,21 @@ function Dashboard() {
                 </small>
               </article>
 
+
               <article className="dashboard-card">
                 <span className="dashboard-card-label">
                   RM / Hour
                 </span>
 
                 <strong>
-                  {metrics.income_per_hour
-                    === null
-                    ? '-'
-                    : formatMoney(
-                        metrics.income_per_hour,
-                      )}
+                  {
+                    metrics.income_per_hour ===
+                    null
+                      ? '-'
+                      : formatMoney(
+                          metrics.income_per_hour,
+                        )
+                  }
                 </strong>
 
                 <small>
@@ -400,18 +452,21 @@ function Dashboard() {
                 </small>
               </article>
 
+
               <article className="dashboard-card">
                 <span className="dashboard-card-label">
                   RM / Order
                 </span>
 
                 <strong>
-                  {metrics.income_per_order
-                    === null
-                    ? '-'
-                    : formatMoney(
-                        metrics.income_per_order,
-                      )}
+                  {
+                    metrics.income_per_order ===
+                    null
+                      ? '-'
+                      : formatMoney(
+                          metrics.income_per_order,
+                        )
+                  }
                 </strong>
 
                 <small>
@@ -419,18 +474,21 @@ function Dashboard() {
                 </small>
               </article>
 
+
               <article className="dashboard-card">
                 <span className="dashboard-card-label">
                   RM / KM
                 </span>
 
                 <strong>
-                  {metrics.income_per_km
-                    === null
-                    ? '-'
-                    : formatMoney(
-                        metrics.income_per_km,
-                      )}
+                  {
+                    metrics.income_per_km ===
+                    null
+                      ? '-'
+                      : formatMoney(
+                          metrics.income_per_km,
+                        )
+                  }
                 </strong>
 
                 <small>
@@ -438,6 +496,7 @@ function Dashboard() {
                 </small>
               </article>
             </section>
+
 
             <div className="dashboard-content-grid">
               <section className="dashboard-section dashboard-platform-section">
@@ -452,6 +511,7 @@ function Dashboard() {
                     </h2>
                   </div>
                 </div>
+
 
                 <div className="dashboard-platform-list">
                   {platformSummary.map(
@@ -493,6 +553,7 @@ function Dashboard() {
                           </strong>
                         </div>
 
+
                         <div className="dashboard-platform-stats">
                           <div>
                             <span>
@@ -506,6 +567,7 @@ function Dashboard() {
                             </strong>
                           </div>
 
+
                           <div>
                             <span>
                               Gross
@@ -517,6 +579,7 @@ function Dashboard() {
                               )}
                             </strong>
                           </div>
+
 
                           <div>
                             <span>
@@ -535,6 +598,7 @@ function Dashboard() {
                   )}
                 </div>
               </section>
+
 
               <section className="dashboard-section dashboard-recent-section">
                 <div className="dashboard-section-header">
@@ -558,6 +622,7 @@ function Dashboard() {
                     View All →
                   </button>
                 </div>
+
 
                 {recentSessions.length ===
                 0 ? (
@@ -614,6 +679,7 @@ function Dashboard() {
                             </span>
                           </div>
 
+
                           <div className="dashboard-recent-stats">
                             <span>
                               {
@@ -645,5 +711,6 @@ function Dashboard() {
     </main>
   )
 }
+
 
 export default Dashboard
