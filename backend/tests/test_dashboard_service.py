@@ -466,18 +466,21 @@ def test_platform_summary():
             platform="shopeefood",
             gross_income=20,
             fuel_cost=2,
+            other_expenses=0,
             total_orders=2,
         ),
         make_session(
             platform="shopeefood",
             gross_income=30,
             fuel_cost=3,
+            other_expenses=0,
             total_orders=3,
         ),
         make_session(
             platform="grabfood",
             gross_income=40,
             fuel_cost=5,
+            other_expenses=0,
             total_orders=4,
         ),
     ]
