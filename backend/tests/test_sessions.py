@@ -1127,3 +1127,157 @@ def test_update_session_rejects_active(
         "Only completed rider "
         "sessions can be edited."
     )
+
+def test_delete_session_success(
+    monkeypatch,
+):
+    user = make_user()
+
+    rider_session = make_session(
+        user.id
+    )
+
+    rider_session.status = (
+        "completed"
+    )
+
+    rider_session.end_time = (
+        datetime.now(
+            timezone.utc
+        )
+    )
+
+    rider_session.end_mileage = (
+        Decimal("5262.00")
+    )
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=rider_session
+        ),
+    )
+
+    delete_mock = MagicMock(
+        return_value=None
+    )
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "delete_completed_session",
+        delete_mock,
+    )
+
+    response = client.delete(
+        (
+            f"/api/sessions/"
+            f"{rider_session.id}"
+        )
+    )
+
+    assert response.status_code == 204
+
+    assert response.content == b""
+
+    delete_mock.assert_called_once()
+
+
+def test_delete_session_not_found(
+    monkeypatch,
+):
+    user = make_user()
+
+    session_id = uuid.uuid4()
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=None
+        ),
+    )
+
+    response = client.delete(
+        (
+            f"/api/sessions/"
+            f"{session_id}"
+        )
+    )
+
+    assert response.status_code == 404
+
+    assert response.json()[
+        "detail"
+    ] == (
+        "Rider session not found."
+    )
+
+
+def test_delete_session_rejects_active(
+    monkeypatch,
+):
+    user = make_user()
+
+    rider_session = make_session(
+        user.id
+    )
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=rider_session
+        ),
+    )
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "delete_completed_session",
+        MagicMock(
+            side_effect=ValueError(
+                "Only completed rider "
+                "sessions can be deleted."
+            )
+        ),
+    )
+
+    response = client.delete(
+        (
+            f"/api/sessions/"
+            f"{rider_session.id}"
+        )
+    )
+
+    assert response.status_code == 400
+
+    assert response.json()[
+        "detail"
+    ] == (
+        "Only completed rider "
+        "sessions can be deleted."
+    )

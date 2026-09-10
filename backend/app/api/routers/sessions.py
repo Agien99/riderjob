@@ -23,6 +23,7 @@ from app.schemas.session import (
 from app.services.session_service import (
     build_session_detail,
     create_session,
+    delete_completed_session,
     end_session,
     get_active_session,
     get_completed_sessions,
@@ -253,6 +254,47 @@ def complete_session(
             db=db,
             rider_session=rider_session,
             request=request,
+        )
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=(
+                status.HTTP_400_BAD_REQUEST
+            ),
+            detail=str(error),
+        ) from error
+
+@router.delete(
+    "/{session_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_session(
+    session_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
+):
+    rider_session = get_session_by_id(
+        db,
+        session_id,
+        current_user.id,
+    )
+
+    if rider_session is None:
+        raise HTTPException(
+            status_code=(
+                status.HTTP_404_NOT_FOUND
+            ),
+            detail=(
+                "Rider session not found."
+            ),
+        )
+
+    try:
+        delete_completed_session(
+            db=db,
+            rider_session=rider_session,
         )
 
     except ValueError as error:

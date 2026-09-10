@@ -271,3 +271,16 @@ def update_completed_session(
     return build_session_detail(
         rider_session
     )
+
+def delete_completed_session(
+    db: Session,
+    rider_session: RiderSession,
+) -> None:
+    if rider_session.status != "completed":
+        raise ValueError(
+            "Only completed rider sessions "
+            "can be deleted."
+        )
+
+    db.delete(rider_session)
+    db.commit()

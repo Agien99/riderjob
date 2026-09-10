@@ -16,6 +16,7 @@ from app.schemas.session import (
 from app.services.session_service import (
     build_session_detail,
     create_session,
+    delete_completed_session,
     end_session,
     get_active_session,
     get_completed_sessions,
@@ -741,4 +742,49 @@ def test_update_completed_session_rejects_lower_mileage():
             request=request,
         )
 
+    db.commit.assert_not_called()
+
+def test_delete_completed_session():
+    db = make_db()
+
+    rider_session = (
+        make_active_session()
+    )
+
+    rider_session.status = (
+        "completed"
+    )
+
+    delete_completed_session(
+        db=db,
+        rider_session=rider_session,
+    )
+
+    db.delete.assert_called_once_with(
+        rider_session
+    )
+
+    db.commit.assert_called_once()
+
+
+def test_delete_completed_session_rejects_active():
+    db = make_db()
+
+    rider_session = (
+        make_active_session()
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Only completed rider "
+            "sessions can be deleted."
+        ),
+    ):
+        delete_completed_session(
+            db=db,
+            rider_session=rider_session,
+        )
+
+    db.delete.assert_not_called()
     db.commit.assert_not_called()
