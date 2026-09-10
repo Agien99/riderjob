@@ -3,6 +3,7 @@ import {
   useMemo,
   useState,
 } from 'react'
+
 import {
   useNavigate,
 } from 'react-router-dom'
@@ -12,6 +13,13 @@ import {
 } from '../services/sessionService'
 
 import '../styles/sessionHistory.css'
+
+
+const platformLabels = {
+  shopeefood: 'ShopeeFood',
+  grabfood: 'GrabFood',
+  lalamove: 'Lalamove',
+}
 
 
 function SessionHistory() {
@@ -52,33 +60,47 @@ function SessionHistory() {
     setSearch,
   ] = useState('')
 
+
   useEffect(() => {
+    let cancelled = false
+
     async function loadHistory() {
       try {
-        setLoading(true)
-        setError('')
-
         const data =
           await getSessionHistory()
 
-        setSessions(data)
+        if (!cancelled) {
+          setSessions(data)
+          setError('')
+        }
       } catch (err) {
-        setError(
-          err.message ||
-            'Unable to load session history.',
-        )
+        if (!cancelled) {
+          setError(
+            err.message ||
+              'Unable to load session history.',
+          )
+        }
       } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
 
     loadHistory()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
+
 
   const filteredSessions =
     useMemo(() => {
       const normalizedSearch =
-        search.trim().toLowerCase()
+        search
+          .trim()
+          .toLowerCase()
 
       return sessions.filter(
         (session) => {
@@ -131,11 +153,13 @@ function SessionHistory() {
       search,
     ])
 
+
   const hasFilters =
     platformFilter !== 'all' ||
     fromDate !== '' ||
     toDate !== '' ||
     search.trim() !== ''
+
 
   function clearFilters() {
     setPlatformFilter('all')
@@ -144,18 +168,33 @@ function SessionHistory() {
     setSearch('')
   }
 
-  function formatPlatform(platform) {
-    const labels = {
-      shopeefood: 'ShopeeFood',
-      grabfood: 'GrabFood',
-      lalamove: 'Lalamove',
-    }
 
+  function formatPlatform(platform) {
     return (
-      labels[platform] ||
+      platformLabels[platform] ||
       platform
     )
   }
+
+
+  function getPlatformBadgeClass(
+    platform,
+  ) {
+    const classes = {
+      shopeefood:
+        'ui-badge-shopeefood',
+      grabfood:
+        'ui-badge-grabfood',
+      lalamove:
+        'ui-badge-lalamove',
+    }
+
+    return (
+      classes[platform] ||
+      'ui-badge-primary'
+    )
+  }
+
 
   function formatDate(date) {
     if (!date) {
@@ -176,6 +215,7 @@ function SessionHistory() {
     )
   }
 
+
   function formatTime(value) {
     if (!value) {
       return '-'
@@ -193,6 +233,7 @@ function SessionHistory() {
     )
   }
 
+
   function formatMoney(value) {
     const amount = Number(
       value || 0,
@@ -201,71 +242,76 @@ function SessionHistory() {
     return `RM ${amount.toFixed(2)}`
   }
 
+
   if (loading) {
     return (
       <main className="history-page">
-        <div className="history-header">
-          <div>
-            <p className="history-eyebrow">
-              RIDER ACTIVITY
-            </p>
-
-            <h1>
-              Session History
-            </h1>
-
-            <p>
-              Review your completed
-              rider sessions.
-            </p>
-          </div>
-        </div>
-
-        <div className="history-state">
-          Loading session history...
+        <div
+          className="ui-state"
+          aria-live="polite"
+        >
+          <p>
+            Loading session history...
+          </p>
         </div>
       </main>
     )
   }
 
+
   return (
     <main className="history-page">
-      <div className="history-header">
-        <div>
-          <p className="history-eyebrow">
-            RIDER ACTIVITY
-          </p>
+      <div className="ui-page-header">
+        <div className="ui-page-header-content">
+          <span className="ui-page-eyebrow">
+            Rider Activity
+          </span>
 
-          <h1>
+          <h1 className="ui-page-title">
             Session History
           </h1>
 
-          <p>
+          <p className="ui-page-subtitle">
             Review your completed
             rider sessions.
           </p>
         </div>
 
-        <button
-          type="button"
-          className="history-start-button"
-          onClick={() =>
-            navigate('/session/start')
-          }
-        >
-          + Start Session
-        </button>
+        <div className="ui-page-actions">
+          <button
+            type="button"
+            className="
+              ui-button
+              ui-button-primary
+            "
+            onClick={() =>
+              navigate(
+                '/session/start',
+              )
+            }
+          >
+            + Start Session
+          </button>
+        </div>
       </div>
 
+
       {error && (
-        <div className="history-error">
+        <div
+          className="
+            ui-alert
+            ui-alert-error
+          "
+          role="alert"
+        >
           {error}
         </div>
       )}
 
+
       {!error &&
         sessions.length === 0 && (
-          <div className="history-empty">
+          <div className="ui-state">
             <h2>
               No completed sessions yet
             </h2>
@@ -278,6 +324,10 @@ function SessionHistory() {
 
             <button
               type="button"
+              className="
+                ui-button
+                ui-button-primary
+              "
               onClick={() =>
                 navigate(
                   '/session/start',
@@ -289,15 +339,21 @@ function SessionHistory() {
           </div>
         )}
 
+
       {!error &&
         sessions.length > 0 && (
           <>
-            <section className="history-filters">
+            <section
+              className="
+                history-filters
+                ui-card
+              "
+            >
               <div className="history-filter-header">
                 <div>
-                  <p className="history-eyebrow">
-                    FILTER RECORDS
-                  </p>
+                  <span className="ui-page-eyebrow">
+                    Filter Records
+                  </span>
 
                   <h2>
                     Find a Session
@@ -314,12 +370,17 @@ function SessionHistory() {
               </div>
 
               <div className="history-filter-grid">
-                <label className="history-filter-field">
-                  <span>
+                <div className="ui-field">
+                  <label
+                    className="ui-field-label"
+                    htmlFor="historyPlatform"
+                  >
                     Platform
-                  </span>
+                  </label>
 
                   <select
+                    className="ui-select"
+                    id="historyPlatform"
                     value={platformFilter}
                     onChange={(event) =>
                       setPlatformFilter(
@@ -343,48 +404,75 @@ function SessionHistory() {
                       Lalamove
                     </option>
                   </select>
-                </label>
+                </div>
 
-                <label className="history-filter-field">
-                  <span>
+                <div className="ui-field">
+                  <label
+                    className="ui-field-label"
+                    htmlFor="historyFromDate"
+                  >
                     From Date
-                  </span>
+                  </label>
 
                   <input
+                    className="
+                      ui-input
+                      history-date-input
+                    "
+                    id="historyFromDate"
                     type="date"
                     value={fromDate}
-                    max={toDate || undefined}
+                    max={
+                      toDate ||
+                      undefined
+                    }
                     onChange={(event) =>
                       setFromDate(
                         event.target.value,
                       )
                     }
                   />
-                </label>
+                </div>
 
-                <label className="history-filter-field">
-                  <span>
+                <div className="ui-field">
+                  <label
+                    className="ui-field-label"
+                    htmlFor="historyToDate"
+                  >
                     To Date
-                  </span>
+                  </label>
 
                   <input
+                    className="
+                      ui-input
+                      history-date-input
+                    "
+                    id="historyToDate"
                     type="date"
                     value={toDate}
-                    min={fromDate || undefined}
+                    min={
+                      fromDate ||
+                      undefined
+                    }
                     onChange={(event) =>
                       setToDate(
                         event.target.value,
                       )
                     }
                   />
-                </label>
+                </div>
 
-                <label className="history-filter-field">
-                  <span>
+                <div className="ui-field">
+                  <label
+                    className="ui-field-label"
+                    htmlFor="historySearch"
+                  >
                     Search Notes
-                  </span>
+                  </label>
 
                   <input
+                    className="ui-input"
+                    id="historySearch"
                     type="search"
                     placeholder="e.g. morning, rain..."
                     value={search}
@@ -394,15 +482,21 @@ function SessionHistory() {
                       )
                     }
                   />
-                </label>
+                </div>
               </div>
 
               {hasFilters && (
                 <div className="history-filter-actions">
                   <button
                     type="button"
-                    className="history-clear-button"
-                    onClick={clearFilters}
+                    className="
+                      ui-button
+                      ui-button-secondary
+                      ui-button-sm
+                    "
+                    onClick={
+                      clearFilters
+                    }
                   >
                     Clear Filters
                   </button>
@@ -410,27 +504,40 @@ function SessionHistory() {
               )}
             </section>
 
+
             {filteredSessions.length ===
             0 ? (
-              <div className="history-no-results">
+              <div className="ui-state">
                 <h2>
                   No matching sessions
                 </h2>
 
                 <p>
-                  Try changing or clearing
-                  your current filters.
+                  Try changing or
+                  clearing your current
+                  filters.
                 </p>
 
                 <button
                   type="button"
-                  onClick={clearFilters}
+                  className="
+                    ui-button
+                    ui-button-secondary
+                  "
+                  onClick={
+                    clearFilters
+                  }
                 >
                   Clear Filters
                 </button>
               </div>
             ) : (
-              <div className="history-table-card">
+              <div
+                className="
+                  history-table-card
+                  ui-card
+                "
+              >
                 <div className="history-table-wrapper">
                   <table className="history-table">
                     <thead>
@@ -442,7 +549,11 @@ function SessionHistory() {
                         <th>Gross</th>
                         <th>Fuel</th>
                         <th>Status</th>
-                        <th />
+                        <th>
+                          <span className="sr-only">
+                            Actions
+                          </span>
+                        </th>
                       </tr>
                     </thead>
 
@@ -456,15 +567,18 @@ function SessionHistory() {
                           >
                             <td>
                               {formatDate(
-                                session.session_date,
+                                session
+                                  .session_date,
                               )}
                             </td>
 
                             <td>
                               <span
                                 className={
-                                  `platform-badge ` +
-                                  `platform-${session.platform}`
+                                  `ui-badge ` +
+                                  `${getPlatformBadgeClass(
+                                    session.platform,
+                                  )}`
                                 }
                               >
                                 {formatPlatform(
@@ -475,34 +589,44 @@ function SessionHistory() {
 
                             <td>
                               {formatTime(
-                                session.start_time,
+                                session
+                                  .start_time,
                               )}
                               {' – '}
                               {formatTime(
-                                session.end_time,
+                                session
+                                  .end_time,
                               )}
                             </td>
 
                             <td>
                               {
-                                session.total_orders
+                                session
+                                  .total_orders
                               }
                             </td>
 
                             <td>
                               {formatMoney(
-                                session.gross_income,
+                                session
+                                  .gross_income,
                               )}
                             </td>
 
                             <td>
                               {formatMoney(
-                                session.fuel_cost,
+                                session
+                                  .fuel_cost,
                               )}
                             </td>
 
                             <td>
-                              <span className="completed-badge">
+                              <span
+                                className="
+                                  ui-badge
+                                  ui-badge-success
+                                "
+                              >
                                 Completed
                               </span>
                             </td>
@@ -510,7 +634,11 @@ function SessionHistory() {
                             <td>
                               <button
                                 type="button"
-                                className="history-view-button"
+                                className="
+                                  ui-button
+                                  ui-button-secondary
+                                  ui-button-sm
+                                "
                                 onClick={() =>
                                   navigate(
                                     `/sessions/${session.id}`,
@@ -533,5 +661,6 @@ function SessionHistory() {
     </main>
   )
 }
+
 
 export default SessionHistory

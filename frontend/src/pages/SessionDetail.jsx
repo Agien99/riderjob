@@ -2,18 +2,26 @@ import {
   useEffect,
   useState,
 } from 'react'
+
 import {
   useNavigate,
   useParams,
 } from 'react-router-dom'
 
 import {
+  deleteRiderSession,
   getSessionDetail,
   updateRiderSession,
-  deleteRiderSession,
 } from '../services/sessionService'
 
 import '../styles/sessionDetail.css'
+
+
+const platformLabels = {
+  shopeefood: 'ShopeeFood',
+  grabfood: 'GrabFood',
+  lalamove: 'Lalamove',
+}
 
 
 function SessionDetail() {
@@ -51,8 +59,8 @@ function SessionDetail() {
   ] = useState('')
 
   const [
-  deleting,
-  setDeleting,
+    deleting,
+    setDeleting,
   ] = useState(false)
 
   const [
@@ -74,42 +82,68 @@ function SessionDetail() {
     notes: '',
   })
 
+
   useEffect(() => {
+    let cancelled = false
+
     async function loadSession() {
       try {
-        setLoading(true)
-        setError('')
-
         const data =
           await getSessionDetail(id)
 
-        setSession(data)
+        if (!cancelled) {
+          setSession(data)
+          setError('')
+        }
       } catch (err) {
-        setError(
-          err.message ||
-            'Unable to load session.',
-        )
+        if (!cancelled) {
+          setError(
+            err.message ||
+              'Unable to load session.',
+          )
+        }
       } finally {
-        setLoading(false)
+        if (!cancelled) {
+          setLoading(false)
+        }
       }
     }
 
     loadSession()
+
+    return () => {
+      cancelled = true
+    }
   }, [id])
 
-  function formatPlatform(platform) {
-    const labels = {
-      shopeefood: 'ShopeeFood',
-      grabfood: 'GrabFood',
-      lalamove: 'Lalamove',
-    }
 
+  function formatPlatform(platform) {
     return (
-      labels[platform] ||
+      platformLabels[platform] ||
       platform ||
       '-'
     )
   }
+
+
+  function getPlatformBadgeClass(
+    platform,
+  ) {
+    const classes = {
+      shopeefood:
+        'ui-badge-shopeefood',
+      grabfood:
+        'ui-badge-grabfood',
+      lalamove:
+        'ui-badge-lalamove',
+    }
+
+    return (
+      classes[platform] ||
+      'ui-badge-primary'
+    )
+  }
+
 
   function formatDate(value) {
     if (!value) {
@@ -129,6 +163,7 @@ function SessionDetail() {
       ),
     )
   }
+
 
   function formatDateTime(value) {
     if (!value) {
@@ -150,6 +185,7 @@ function SessionDetail() {
     )
   }
 
+
   function formatMoney(value) {
     const amount = Number(
       value || 0,
@@ -157,6 +193,7 @@ function SessionDetail() {
 
     return `RM ${amount.toFixed(2)}`
   }
+
 
   function formatNumber(
     value,
@@ -173,6 +210,7 @@ function SessionDetail() {
       2,
     )}${suffix}`
   }
+
 
   function formatDuration(minutes) {
     if (
@@ -202,6 +240,7 @@ function SessionDetail() {
     )
   }
 
+
   function startEditing() {
     setFormData({
       platform:
@@ -223,13 +262,16 @@ function SessionDetail() {
     })
 
     setEditError('')
+    setDeleteError('')
     setIsEditing(true)
   }
+
 
   function cancelEditing() {
     setEditError('')
     setIsEditing(false)
   }
+
 
   function handleChange(event) {
     const {
@@ -244,6 +286,7 @@ function SessionDetail() {
       }),
     )
   }
+
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -274,6 +317,7 @@ function SessionDetail() {
       formData.other_expenses,
     )
 
+
     if (
       !Number.isFinite(startMileage) ||
       startMileage < 0
@@ -283,6 +327,7 @@ function SessionDetail() {
       )
       return
     }
+
 
     if (
       !Number.isFinite(endMileage) ||
@@ -295,6 +340,7 @@ function SessionDetail() {
       return
     }
 
+
     if (
       !Number.isInteger(totalOrders) ||
       totalOrders < 0
@@ -304,6 +350,7 @@ function SessionDetail() {
       )
       return
     }
+
 
     if (
       !Number.isFinite(grossIncome) ||
@@ -320,6 +367,7 @@ function SessionDetail() {
       return
     }
 
+
     try {
       setSaving(true)
 
@@ -329,18 +377,25 @@ function SessionDetail() {
           {
             platform:
               formData.platform,
+
             start_mileage:
               formData.start_mileage,
+
             end_mileage:
               formData.end_mileage,
+
             total_orders:
               totalOrders,
+
             gross_income:
               formData.gross_income,
+
             fuel_cost:
               formData.fuel_cost,
+
             other_expenses:
               formData.other_expenses,
+
             notes:
               formData.notes,
           },
@@ -358,11 +413,13 @@ function SessionDetail() {
     }
   }
 
+
   async function handleDelete() {
-    const confirmed = window.confirm(
-      'Delete this completed session? ' +
-        'This action cannot be undone.',
-    )
+    const confirmed =
+      window.confirm(
+        'Delete this completed session? ' +
+          'This action cannot be undone.',
+      )
 
     if (!confirmed) {
       return
@@ -385,22 +442,34 @@ function SessionDetail() {
     }
   }
 
+
   if (loading) {
     return (
       <main className="detail-page">
-        <div className="detail-state">
-          Loading session...
+        <div
+          className="ui-state"
+          aria-live="polite"
+        >
+          <p>
+            Loading session...
+          </p>
         </div>
       </main>
     )
   }
+
 
   if (error || !session) {
     return (
       <main className="detail-page">
         <button
           type="button"
-          className="detail-back-button"
+          className="
+            ui-button
+            ui-button-secondary
+            ui-button-sm
+            detail-back-button
+          "
           onClick={() =>
             navigate('/sessions')
           }
@@ -408,16 +477,30 @@ function SessionDetail() {
           ← Back to Sessions
         </button>
 
-        <div className="detail-error">
-          {error ||
-            'Session not found.'}
+        <div
+          className="
+            ui-state
+            ui-state-error
+          "
+          role="alert"
+        >
+          <h2>
+            Unable to Open Session
+          </h2>
+
+          <p>
+            {error ||
+              'Session not found.'}
+          </p>
         </div>
       </main>
     )
   }
 
+
   const metrics =
     session.metrics || {}
+
 
   return (
     <main className="detail-page">
@@ -425,7 +508,12 @@ function SessionDetail() {
         <div>
           <button
             type="button"
-            className="detail-back-button"
+            className="
+              ui-button
+              ui-button-ghost
+              ui-button-sm
+              detail-back-button
+            "
             onClick={() =>
               navigate('/sessions')
             }
@@ -433,18 +521,18 @@ function SessionDetail() {
             ← Back to Sessions
           </button>
 
-          <p className="detail-eyebrow">
-            SESSION REPORT
-          </p>
+          <span className="ui-page-eyebrow">
+            Session Report
+          </span>
 
-          <h1>
+          <h1 className="ui-page-title">
             {formatPlatform(
               session.platform,
             )}{' '}
             Session
           </h1>
 
-          <p>
+          <p className="ui-page-subtitle">
             {formatDate(
               session.session_date,
             )}
@@ -454,8 +542,10 @@ function SessionDetail() {
         <div className="detail-header-actions">
           <span
             className={
-              `detail-platform-badge ` +
-              `detail-platform-${session.platform}`
+              `ui-badge ` +
+              `${getPlatformBadgeClass(
+                session.platform,
+              )}`
             }
           >
             {formatPlatform(
@@ -467,8 +557,13 @@ function SessionDetail() {
             <>
               <button
                 type="button"
-                className="detail-edit-button"
-                onClick={startEditing}
+                className="
+                  ui-button
+                  ui-button-secondary
+                "
+                onClick={
+                  startEditing
+                }
                 disabled={deleting}
               >
                 Edit Session
@@ -476,8 +571,13 @@ function SessionDetail() {
 
               <button
                 type="button"
-                className="detail-delete-button"
-                onClick={handleDelete}
+                className="
+                  ui-button
+                  ui-button-danger
+                "
+                onClick={
+                  handleDelete
+                }
                 disabled={deleting}
               >
                 {deleting
@@ -489,23 +589,36 @@ function SessionDetail() {
         </div>
       </div>
 
+
       {deleteError && (
-        <div className="detail-delete-error">
+        <div
+          className="
+            ui-alert
+            ui-alert-error
+          "
+          role="alert"
+        >
           {deleteError}
         </div>
       )}
+
 
       {isEditing ? (
         <form
           className="detail-edit-form"
           onSubmit={handleSubmit}
         >
-          <section className="detail-section">
+          <section
+            className="
+              detail-section
+              ui-card
+            "
+          >
             <div className="detail-section-header">
               <div>
-                <p className="detail-eyebrow">
-                  EDIT SESSION
-                </p>
+                <span className="ui-page-eyebrow">
+                  Edit Session
+                </span>
 
                 <h2>
                   Session Information
@@ -513,24 +626,40 @@ function SessionDetail() {
               </div>
             </div>
 
+
             {editError && (
-              <div className="detail-edit-error">
+              <div
+                className="
+                  ui-alert
+                  ui-alert-error
+                "
+                role="alert"
+              >
                 {editError}
               </div>
             )}
 
+
             <div className="detail-form-grid">
-              <label className="detail-form-field">
-                <span>
+              <div className="ui-field">
+                <label
+                  className="ui-field-label"
+                  htmlFor="editPlatform"
+                >
                   Platform
-                </span>
+                </label>
 
                 <select
+                  className="ui-select"
+                  id="editPlatform"
                   name="platform"
                   value={
                     formData.platform
                   }
-                  onChange={handleChange}
+                  onChange={
+                    handleChange
+                  }
+                  disabled={saving}
                 >
                   <option value="shopeefood">
                     ShopeeFood
@@ -544,132 +673,262 @@ function SessionDetail() {
                     Lalamove
                   </option>
                 </select>
-              </label>
+              </div>
 
-              <label className="detail-form-field">
-                <span>
+
+              <div className="ui-field">
+                <label
+                  className="ui-field-label"
+                  htmlFor="editTotalOrders"
+                >
                   Total Orders
-                </span>
+                </label>
 
                 <input
+                  className="ui-input"
+                  id="editTotalOrders"
                   type="number"
                   name="total_orders"
                   min="0"
                   step="1"
+                  inputMode="numeric"
                   value={
                     formData.total_orders
                   }
-                  onChange={handleChange}
+                  onChange={
+                    handleChange
+                  }
+                  disabled={saving}
                 />
-              </label>
+              </div>
 
-              <label className="detail-form-field">
-                <span>
+
+              <div className="ui-field">
+                <label
+                  className="ui-field-label"
+                  htmlFor="editStartMileage"
+                >
                   Start Mileage
-                </span>
+                </label>
 
-                <input
-                  type="number"
-                  name="start_mileage"
-                  min="0"
-                  step="0.01"
-                  value={
-                    formData.start_mileage
-                  }
-                  onChange={handleChange}
-                />
-              </label>
+                <div className="ui-input-wrapper">
+                  <input
+                    className="
+                      ui-input
+                      ui-input-has-suffix
+                    "
+                    id="editStartMileage"
+                    type="number"
+                    name="start_mileage"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={
+                      formData.start_mileage
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    disabled={saving}
+                  />
 
-              <label className="detail-form-field">
-                <span>
+                  <span className="ui-input-suffix">
+                    KM
+                  </span>
+                </div>
+              </div>
+
+
+              <div className="ui-field">
+                <label
+                  className="ui-field-label"
+                  htmlFor="editEndMileage"
+                >
                   End Mileage
-                </span>
+                </label>
 
-                <input
-                  type="number"
-                  name="end_mileage"
-                  min="0"
-                  step="0.01"
-                  value={
-                    formData.end_mileage
-                  }
-                  onChange={handleChange}
-                />
-              </label>
+                <div className="ui-input-wrapper">
+                  <input
+                    className="
+                      ui-input
+                      ui-input-has-suffix
+                    "
+                    id="editEndMileage"
+                    type="number"
+                    name="end_mileage"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={
+                      formData.end_mileage
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    disabled={saving}
+                  />
 
-              <label className="detail-form-field">
-                <span>
-                  Gross Income (RM)
-                </span>
+                  <span className="ui-input-suffix">
+                    KM
+                  </span>
+                </div>
+              </div>
 
-                <input
-                  type="number"
-                  name="gross_income"
-                  min="0"
-                  step="0.01"
-                  value={
-                    formData.gross_income
-                  }
-                  onChange={handleChange}
-                />
-              </label>
 
-              <label className="detail-form-field">
-                <span>
-                  Fuel Cost (RM)
-                </span>
+              <div className="ui-field">
+                <label
+                  className="ui-field-label"
+                  htmlFor="editGrossIncome"
+                >
+                  Gross Income
+                </label>
 
-                <input
-                  type="number"
-                  name="fuel_cost"
-                  min="0"
-                  step="0.01"
-                  value={
-                    formData.fuel_cost
-                  }
-                  onChange={handleChange}
-                />
-              </label>
+                <div className="ui-input-wrapper">
+                  <span className="ui-input-prefix">
+                    RM
+                  </span>
 
-              <label className="detail-form-field">
-                <span>
-                  Other Expenses (RM)
-                </span>
+                  <input
+                    className="
+                      ui-input
+                      ui-input-has-prefix
+                    "
+                    id="editGrossIncome"
+                    type="number"
+                    name="gross_income"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={
+                      formData.gross_income
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    disabled={saving}
+                  />
+                </div>
+              </div>
 
-                <input
-                  type="number"
-                  name="other_expenses"
-                  min="0"
-                  step="0.01"
-                  value={
-                    formData.other_expenses
-                  }
-                  onChange={handleChange}
-                />
-              </label>
 
-              <label className="detail-form-field detail-form-notes">
-                <span>
+              <div className="ui-field">
+                <label
+                  className="ui-field-label"
+                  htmlFor="editFuelCost"
+                >
+                  Fuel Cost
+                </label>
+
+                <div className="ui-input-wrapper">
+                  <span className="ui-input-prefix">
+                    RM
+                  </span>
+
+                  <input
+                    className="
+                      ui-input
+                      ui-input-has-prefix
+                    "
+                    id="editFuelCost"
+                    type="number"
+                    name="fuel_cost"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={
+                      formData.fuel_cost
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    disabled={saving}
+                  />
+                </div>
+              </div>
+
+
+              <div className="ui-field">
+                <label
+                  className="ui-field-label"
+                  htmlFor="editOtherExpenses"
+                >
+                  Other Expenses
+                </label>
+
+                <div className="ui-input-wrapper">
+                  <span className="ui-input-prefix">
+                    RM
+                  </span>
+
+                  <input
+                    className="
+                      ui-input
+                      ui-input-has-prefix
+                    "
+                    id="editOtherExpenses"
+                    type="number"
+                    name="other_expenses"
+                    min="0"
+                    step="0.01"
+                    inputMode="decimal"
+                    value={
+                      formData.other_expenses
+                    }
+                    onChange={
+                      handleChange
+                    }
+                    disabled={saving}
+                  />
+                </div>
+              </div>
+
+
+              <div
+                className="
+                  ui-field
+                  detail-form-notes
+                "
+              >
+                <label
+                  className="ui-field-label"
+                  htmlFor="editNotes"
+                >
                   Notes
-                </span>
+
+                  <span className="ui-field-hint">
+                    {' '}
+                    (Optional)
+                  </span>
+                </label>
 
                 <textarea
+                  className="ui-textarea"
+                  id="editNotes"
                   name="notes"
                   rows="4"
                   maxLength="2000"
                   value={
                     formData.notes
                   }
-                  onChange={handleChange}
+                  onChange={
+                    handleChange
+                  }
+                  disabled={saving}
                 />
-              </label>
+              </div>
             </div>
+
 
             <div className="detail-form-actions">
               <button
                 type="button"
-                className="detail-cancel-button"
-                onClick={cancelEditing}
+                className="
+                  ui-button
+                  ui-button-secondary
+                "
+                onClick={
+                  cancelEditing
+                }
                 disabled={saving}
               >
                 Cancel
@@ -677,7 +936,10 @@ function SessionDetail() {
 
               <button
                 type="submit"
-                className="detail-save-button"
+                className="
+                  ui-button
+                  ui-button-primary
+                "
                 disabled={saving}
               >
                 {saving
@@ -690,7 +952,13 @@ function SessionDetail() {
       ) : (
         <>
           <section className="detail-metrics-grid">
-            <article className="detail-metric-card">
+            <article
+              className="
+                detail-metric-card
+                detail-metric-primary
+                ui-card
+              "
+            >
               <span>
                 Net Income
               </span>
@@ -702,7 +970,12 @@ function SessionDetail() {
               </strong>
             </article>
 
-            <article className="detail-metric-card">
+            <article
+              className="
+                detail-metric-card
+                ui-card
+              "
+            >
               <span>
                 Distance
               </span>
@@ -715,7 +988,12 @@ function SessionDetail() {
               </strong>
             </article>
 
-            <article className="detail-metric-card">
+            <article
+              className="
+                detail-metric-card
+                ui-card
+              "
+            >
               <span>
                 Duration
               </span>
@@ -727,7 +1005,12 @@ function SessionDetail() {
               </strong>
             </article>
 
-            <article className="detail-metric-card">
+            <article
+              className="
+                detail-metric-card
+                ui-card
+              "
+            >
               <span>
                 Orders
               </span>
@@ -738,12 +1021,18 @@ function SessionDetail() {
             </article>
           </section>
 
-          <section className="detail-section">
+
+          <section
+            className="
+              detail-section
+              ui-card
+            "
+          >
             <div className="detail-section-header">
               <div>
-                <p className="detail-eyebrow">
-                  PERFORMANCE
-                </p>
+                <span className="ui-page-eyebrow">
+                  Performance
+                </span>
 
                 <h2>
                   Earnings Efficiency
@@ -799,19 +1088,30 @@ function SessionDetail() {
             </div>
           </section>
 
-          <section className="detail-section">
+
+          <section
+            className="
+              detail-section
+              ui-card
+            "
+          >
             <div className="detail-section-header">
               <div>
-                <p className="detail-eyebrow">
-                  RIDE INFORMATION
-                </p>
+                <span className="ui-page-eyebrow">
+                  Ride Information
+                </span>
 
                 <h2>
                   Session Details
                 </h2>
               </div>
 
-              <span className="detail-status">
+              <span
+                className="
+                  ui-badge
+                  ui-badge-success
+                "
+              >
                 Completed
               </span>
             </div>
@@ -869,12 +1169,18 @@ function SessionDetail() {
             </div>
           </section>
 
-          <section className="detail-section">
+
+          <section
+            className="
+              detail-section
+              ui-card
+            "
+          >
             <div className="detail-section-header">
               <div>
-                <p className="detail-eyebrow">
-                  FINANCIAL
-                </p>
+                <span className="ui-page-eyebrow">
+                  Financial
+                </span>
 
                 <h2>
                   Earnings & Expenses
@@ -933,12 +1239,18 @@ function SessionDetail() {
             </div>
           </section>
 
-          <section className="detail-section">
+
+          <section
+            className="
+              detail-section
+              ui-card
+            "
+          >
             <div className="detail-section-header">
               <div>
-                <p className="detail-eyebrow">
-                  NOTES
-                </p>
+                <span className="ui-page-eyebrow">
+                  Notes
+                </span>
 
                 <h2>
                   Session Notes
@@ -956,5 +1268,6 @@ function SessionDetail() {
     </main>
   )
 }
+
 
 export default SessionDetail
