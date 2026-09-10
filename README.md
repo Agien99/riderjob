@@ -2,87 +2,266 @@
 
 **Ride. Track. Improve.**
 
-RiderJob is a personal rider job tracking and analytics web application built to record delivery sessions, calculate riding performance, and compare earnings across multiple delivery platforms.
+RiderJob is a personal rider job tracking and analytics web application
+built for recording delivery sessions, monitoring earnings and expenses,
+and analysing riding performance across multiple delivery platforms.
 
-The project is designed around a real rider workflow and is intended for daily use on both mobile and desktop.
+The application was designed around a real part-time rider workflow,
+with a strong focus on fast mobile usage, practical data recording, and
+useful performance insights.
 
-Supported platforms:
+> Built by a Developer, for Real Life.
 
-* ShopeeFood
-* GrabFood
-* Lalamove
+------------------------------------------------------------------------
 
----
+## Overview
 
-## Project Purpose
+Delivery riders often rely on notes, spreadsheets, or memory to keep
+track of their working sessions. RiderJob provides a dedicated workflow
+for recording each riding session and automatically converting the
+recorded information into useful performance metrics.
 
-RiderJob replaces manual rider session recording with a simple digital workflow.
+A rider can start a session by selecting a delivery platform and
+recording the motorcycle's starting mileage. When the session is
+completed, the rider records the ending mileage, number of completed
+orders, gross earnings, fuel expenses, and other expenses.
 
-Before starting a delivery session, the rider records the starting motorcycle mileage and selects the delivery platform.
+RiderJob then calculates the session's distance, duration, net earnings,
+and efficiency metrics automatically.
 
-At the end of the session, the rider records the ending mileage, completed orders, earnings, fuel cost, and other expenses.
+Supported delivery platforms:
 
-The system automatically calculates useful performance metrics such as:
+-   ShopeeFood
+-   GrabFood
+-   Lalamove
 
-* Distance travelled
-* Session duration
-* Gross earnings
-* Net earnings
-* Earnings per hour
-* Earnings per kilometre
-* Earnings per order
-* Platform performance
-* Weekly and monthly riding performance
+------------------------------------------------------------------------
 
-The goal is not only to store rider records, but also to turn those records into useful data for making better decisions.
+## Features
 
----
+### Rider Session Tracking
 
-## Core Concept
+RiderJob provides a complete session lifecycle for delivery work.
 
-Typical RiderJob workflow:
+A rider can:
 
-```text
+-   Select a delivery platform
+-   Record starting motorcycle mileage
+-   Start a rider session
+-   View the currently active session
+-   Track session duration
+-   End a session
+-   Record ending mileage
+-   Record completed orders
+-   Record gross income
+-   Record fuel costs
+-   Record other expenses
+-   Add session notes
+
+Only one active rider session is allowed per user at a time.
+
+### Dashboard
+
+The dashboard provides a quick overview of rider activity and
+performance.
+
+Available information includes:
+
+-   Net earnings
+-   Gross earnings
+-   Total orders
+-   Total distance
+-   Total riding hours
+-   Earnings per hour
+-   Earnings per order
+-   Earnings per kilometre
+-   Platform performance
+-   Recent completed sessions
+
+Dashboard statistics can be viewed across different periods such as
+today, the current week, and the current month.
+
+### Session History
+
+Completed rider sessions are stored in session history.
+
+Users can:
+
+-   View previous sessions
+-   View complete session details
+-   Search session records
+-   Filter by delivery platform
+-   Filter by date
+-   Edit existing sessions
+-   Delete incorrect sessions
+
+Each authenticated user can only access their own rider records.
+
+### Analytics
+
+RiderJob converts recorded sessions into performance analytics that help
+evaluate how efficiently rider work is performing.
+
+Analytics include:
+
+-   Gross and net earnings
+-   Earnings trends
+-   Orders completed
+-   Distance travelled
+-   Riding duration
+-   Earnings per hour
+-   Earnings per order
+-   Earnings per kilometre
+-   Fuel and other expenses
+-   Platform comparison
+-   Day-of-week performance
+-   Platform efficiency
+-   Performance highlights
+
+Analytics can be viewed across multiple time periods.
+
+### User Authentication
+
+RiderJob includes its own authentication system.
+
+Features include:
+
+-   User registration
+-   Email and password login
+-   Secure password hashing
+-   JWT-based authentication
+-   Persistent authentication
+-   Protected frontend routes
+-   Protected API endpoints
+-   User-specific data isolation
+-   Logout
+
+Passwords are never stored as plain text.
+
+### Responsive Interface
+
+RiderJob is designed for both desktop and mobile use.
+
+The interface includes:
+
+-   Desktop sidebar navigation
+-   Mobile bottom navigation
+-   Responsive dashboards
+-   Responsive analytics
+-   Mobile-friendly session forms
+-   Loading states
+-   Empty states
+-   Error feedback
+-   Consistent form validation
+-   Dark technology-focused interface
+
+The mobile experience is especially important because rider sessions are
+normally started and ended while away from a desktop computer.
+
+------------------------------------------------------------------------
+
+## Rider Workflow
+
+``` text
 Login
-  ↓
+  │
+  ▼
 Dashboard
-  ↓
+  │
+  ▼
 Select Delivery Platform
-  ↓
+  │
+  ▼
 Enter Starting Mileage
-  ↓
+  │
+  ▼
 Start Session
-  ↓
+  │
+  ▼
 Complete Deliveries
-  ↓
+  │
+  ▼
 End Session
-  ↓
-Enter:
-- Ending Mileage
-- Total Orders
-- Gross Income
-- Fuel Cost
-- Other Expenses
-  ↓
-System Calculates Performance
-  ↓
-Session Stored in History
-  ↓
-Dashboard and Analytics Updated
+  │
+  ▼
+Enter Session Results
+  │
+  ├── Ending Mileage
+  ├── Total Orders
+  ├── Gross Income
+  ├── Fuel Cost
+  ├── Other Expenses
+  └── Notes
+  │
+  ▼
+Performance Calculated
+  │
+  ▼
+Session History
+  │
+  ▼
+Dashboard & Analytics
 ```
 
----
+------------------------------------------------------------------------
 
-# System Architecture
+## Performance Metrics
 
-RiderJob uses a separated frontend, backend API, and database architecture.
+RiderJob derives performance metrics from the underlying rider session
+data.
 
-```text
+### Distance Travelled
+
+``` text
+Distance = Ending Mileage - Starting Mileage
+```
+
+### Session Duration
+
+``` text
+Duration = End Time - Start Time
+```
+
+### Net Earnings
+
+``` text
+Net Earnings = Gross Income - Fuel Cost - Other Expenses
+```
+
+### Earnings Per Hour
+
+``` text
+RM / Hour = Net Earnings / Session Duration
+```
+
+### Earnings Per Order
+
+``` text
+RM / Order = Net Earnings / Total Orders
+```
+
+### Earnings Per Kilometre
+
+``` text
+RM / KM = Net Earnings / Distance Travelled
+```
+
+The application safely handles incomplete sessions and values such as
+zero orders or zero distance.
+
+------------------------------------------------------------------------
+
+## System Architecture
+
+RiderJob uses a separated frontend, backend API, and database
+architecture.
+
+``` text
 ┌─────────────────────────────┐
 │        React + Vite         │
 │          Frontend           │
 │                             │
-│  GitHub Pages               │
+│       GitHub Pages          │
 └──────────────┬──────────────┘
                │
                │ HTTPS / REST API
@@ -91,434 +270,112 @@ RiderJob uses a separated frontend, backend API, and database architecture.
 │           FastAPI           │
 │          Backend API        │
 │                             │
-│  Authentication            │
-│  Business Logic            │
-│  Validation                │
-│  Analytics                 │
+│  Authentication             │
+│  Authorization              │
+│  Business Logic             │
+│  Validation                 │
+│  Analytics                  │
 └──────────────┬──────────────┘
                │
                │ PostgreSQL
                ▼
 ┌─────────────────────────────┐
 │            Neon             │
-│         PostgreSQL DB       │
+│         PostgreSQL          │
 │                             │
-│  Users                     │
-│  Rider Sessions            │
-│  Application Data          │
+│  Users                      │
+│  Rider Sessions             │
 └─────────────────────────────┘
 ```
 
-The React frontend must not connect directly to the Neon database.
+The React application never connects directly to the PostgreSQL
+database.
 
-All database access and business logic should pass through the FastAPI backend.
+All database operations, authentication, authorization, validation, and
+business rules are handled through the FastAPI backend.
 
----
+------------------------------------------------------------------------
 
-# Technology Stack
-
-## Frontend
-
-* React
-* Vite
-* JavaScript
-* CSS
-* React Router
-
-## Backend
-
-* Python
-* FastAPI
-* REST API
-* Pydantic
-* SQLAlchemy
-
-## Database
-
-* Neon
-* PostgreSQL
-
-## Authentication
-
-Authentication will be handled through the FastAPI backend.
-
-Initial authentication:
-
-* Email
-* Password
-* Password hashing
-* Token-based authentication
-* Protected API endpoints
-
-Possible future authentication:
-
-* Google Sign-In
-
-## Deployment
+## Technology Stack
 
 ### Frontend
 
-* GitHub
-* GitHub Actions
-* GitHub Pages
-
-Planned frontend URL:
-
-```text
-https://agien99.github.io/riderjob/
-```
+-   React
+-   Vite
+-   JavaScript
+-   CSS
+-   React Router
 
 ### Backend
 
-Planned deployment:
-
-* Render
-
-The production API URL will be configured through frontend environment variables.
+-   Python
+-   FastAPI
+-   Pydantic
+-   SQLAlchemy
+-   Alembic
+-   PyJWT
+-   Argon2
 
 ### Database
 
-* Neon PostgreSQL
+-   PostgreSQL
+-   Neon
 
-Database credentials must only be available to the backend.
+### Infrastructure
 
-They must never be exposed through the React frontend.
+-   GitHub
+-   GitHub Actions
+-   GitHub Pages
+-   Render
 
----
+------------------------------------------------------------------------
 
-# Design Direction
+## Application Structure
 
-RiderJob uses a dark, technology-focused interface inspired by engineering dashboards and developer tools.
-
-Main design characteristics:
-
-* Dark navy / black background
-* Blue primary system accent
-* Compact information cards
-* Data-focused dashboard
-* Responsive mobile-first interface
-* Desktop sidebar navigation
-* Mobile bottom navigation
-* Minimal animations
-* Platform-specific colors used only where useful
-
-Platform colors:
-
-```text
-ShopeeFood → Orange
-GrabFood   → Green
-Lalamove   → Red
+``` text
+riderjob/
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── context/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── styles/
+│   │
+│   ├── public/
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── models/
+│   │   ├── schemas/
+│   │   ├── services/
+│   │   ├── config.py
+│   │   ├── database.py
+│   │   └── main.py
+│   │
+│   ├── tests/
+│   ├── alembic/
+│   └── requirements.txt
+│
+├── .github/
+│   └── workflows/
+│
+└── README.md
 ```
 
-Primary application branding:
+------------------------------------------------------------------------
 
-```text
-RiderJob
+## API
 
-Ride. Track. Improve.
-```
+The backend exposes REST API endpoints for authentication, rider
+sessions, dashboard data, and analytics.
 
-Additional project identity:
-
-```text
-Built by a Developer, for Real Life.
-```
-
----
-
-# MVP Features
-
-## Authentication
-
-Users must authenticate before accessing rider records.
-
-Initial authentication will support:
-
-* User registration
-* Email/password login
-* Password hashing
-* Authentication token
-* Protected frontend routes
-* Protected API endpoints
-* Logout
-* Persistent login session
-
-The authentication implementation must ensure that passwords are never stored as plain text.
-
----
-
-## Dashboard
-
-The dashboard provides a quick overview of rider activity.
-
-Planned statistics:
-
-* Today's earnings
-* Weekly earnings
-* Monthly earnings
-* Total earnings
-* Total orders
-* Total distance
-* Total riding hours
-* Average RM / hour
-* Average RM / order
-* Average RM / kilometre
-* Recent sessions
-
-The dashboard also provides quick access to start a new rider session.
-
----
-
-## Start Session
-
-The rider selects one platform:
-
-* ShopeeFood
-* GrabFood
-* Lalamove
-
-Required information:
-
-```text
-Platform
-Starting Mileage
-```
-
-The system automatically records:
-
-```text
-Session Date
-Start Time
-```
-
-An optional note may also be recorded.
-
-The backend validates the request before creating the active session.
-
----
-
-## Active Session
-
-While a rider session is running, the application displays:
-
-* Platform
-* Session start time
-* Starting mileage
-* Current session duration
-* Session status
-
-The rider can end the session at any time.
-
-A user should normally have only one active rider session.
-
-The backend must prevent accidental creation of multiple active sessions for the same user.
-
----
-
-## End Session
-
-When ending a session, the rider enters:
-
-```text
-Ending Mileage
-Total Orders
-Gross Income
-Fuel Cost
-Other Expenses
-Notes
-```
-
-The application automatically records the ending time.
-
-The backend validates the submitted information and updates the session status to:
-
-```text
-completed
-```
-
-The completed session becomes available in session history and analytics.
-
----
-
-## Session History
-
-The history module provides access to previous rider sessions.
-
-Planned capabilities:
-
-* View sessions
-* View session details
-* Filter by platform
-* Filter by date
-* Edit session
-* Delete incorrect session
-* Search records
-
-Users must only be able to access their own rider sessions.
-
----
-
-## Analytics
-
-The analytics module converts recorded sessions into useful performance information.
-
-Planned analytics include:
-
-* Earnings by platform
-* Orders by platform
-* Earnings trend
-* Total distance
-* Total riding hours
-* Gross vs net earnings
-* Average earnings per hour
-* Average earnings per order
-* Average earnings per kilometre
-* Fuel spending
-* Platform comparison
-
-Later versions may include:
-
-* Day-of-week performance
-* Time-of-day performance
-* Monthly comparison
-* Weekly targets
-* Platform efficiency scoring
-* Motorcycle running cost
-* Maintenance tracking
-
----
-
-# Database Design
-
-The database will use Neon PostgreSQL.
-
-## `users`
-
-Stores RiderJob user accounts.
-
-| Column          | Type        | Description         |
-| --------------- | ----------- | ------------------- |
-| `id`            | UUID        | Primary key         |
-| `email`         | VARCHAR     | Unique user email   |
-| `password_hash` | VARCHAR     | Hashed password     |
-| `display_name`  | VARCHAR     | User display name   |
-| `is_active`     | BOOLEAN     | Account status      |
-| `created_at`    | TIMESTAMPTZ | Account creation    |
-| `updated_at`    | TIMESTAMPTZ | Last account update |
-
-Passwords must never be stored directly.
-
-Only securely generated password hashes should be stored.
-
----
-
-## `rider_sessions`
-
-Stores rider work sessions.
-
-| Column           | Type        | Description                       |
-| ---------------- | ----------- | --------------------------------- |
-| `id`             | UUID        | Primary key                       |
-| `user_id`        | UUID        | Foreign key to `users.id`         |
-| `platform`       | VARCHAR     | Rider platform                    |
-| `session_date`   | DATE        | Session date                      |
-| `start_time`     | TIMESTAMPTZ | Session start                     |
-| `end_time`       | TIMESTAMPTZ | Session end                       |
-| `start_mileage`  | NUMERIC     | Motorcycle mileage before session |
-| `end_mileage`    | NUMERIC     | Motorcycle mileage after session  |
-| `total_orders`   | INTEGER     | Completed deliveries              |
-| `gross_income`   | NUMERIC     | Total rider earnings              |
-| `fuel_cost`      | NUMERIC     | Fuel expense                      |
-| `other_expenses` | NUMERIC     | Other rider expenses              |
-| `notes`          | TEXT        | Optional notes                    |
-| `status`         | VARCHAR     | `active` or `completed`           |
-| `created_at`     | TIMESTAMPTZ | Record creation timestamp         |
-| `updated_at`     | TIMESTAMPTZ | Record update timestamp           |
-
-Relationship:
-
-```text
-users
-  │
-  │ 1
-  │
-  └────────────── *
-             rider_sessions
-```
-
-One user can have many rider sessions.
-
----
-
-# Calculated Values
-
-Calculated values should generally not be stored directly in the database.
-
-They should be derived from the underlying session data.
-
-## Distance
-
-```text
-distance =
-end_mileage - start_mileage
-```
-
-## Session Duration
-
-```text
-duration =
-end_time - start_time
-```
-
-## Net Income
-
-```text
-net_income =
-gross_income - fuel_cost - other_expenses
-```
-
-## Gross Earnings Per Hour
-
-```text
-gross_income_per_hour =
-gross_income / session_duration_hours
-```
-
-## Net Earnings Per Hour
-
-```text
-net_income_per_hour =
-net_income / session_duration_hours
-```
-
-## Earnings Per Kilometre
-
-```text
-income_per_km =
-gross_income / distance
-```
-
-## Earnings Per Order
-
-```text
-income_per_order =
-gross_income / total_orders
-```
-
-Calculated fields must safely handle:
-
-* Zero orders
-* Zero distance
-* Zero duration
-* Incomplete active sessions
-
----
-
-# Planned API
-
-Initial REST API structure:
-
-```text
+``` text
 /api/health
 
 /api/auth/register
@@ -528,405 +385,179 @@ Initial REST API structure:
 /api/sessions
 /api/sessions/active
 /api/sessions/start
-/api/sessions/{id}
-/api/sessions/{id}/end
+/api/sessions/{session_id}
+/api/sessions/{session_id}/end
 
 /api/dashboard
 /api/analytics
 ```
 
-Expected HTTP methods may include:
+Protected endpoints require a valid authenticated user.
 
-```text
-GET
-POST
-PUT
-PATCH
-DELETE
+Session queries are scoped to the authenticated user's account so one
+user cannot retrieve or modify another user's rider sessions.
+
+------------------------------------------------------------------------
+
+## Database
+
+RiderJob uses PostgreSQL hosted on Neon.
+
+The main application entities are:
+
+``` text
+users
+  │
+  │ 1
+  │
+  └────────────── *
+             rider_sessions
 ```
 
-All protected endpoints must verify the authenticated user.
+A user can have multiple rider sessions, while every rider session
+belongs to one user.
 
----
+### Users
 
-# Planned Repository Structure
+The `users` table stores:
 
-RiderJob will contain separate frontend and backend applications.
+-   User ID
+-   Email
+-   Password hash
+-   Display name
+-   Account status
+-   Creation timestamp
+-   Update timestamp
 
-```text
-riderjob/
-│
-├── frontend/
-│   │
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── AppHeader.jsx
-│   │   │   ├── Sidebar.jsx
-│   │   │   ├── MobileNavigation.jsx
-│   │   │   ├── StatCard.jsx
-│   │   │   ├── PlatformCard.jsx
-│   │   │   ├── PlatformBadge.jsx
-│   │   │   └── SessionCard.jsx
-│   │   │
-│   │   ├── layouts/
-│   │   │   └── AppLayout.jsx
-│   │   │
-│   │   ├── pages/
-│   │   │   ├── Login.jsx
-│   │   │   ├── Register.jsx
-│   │   │   ├── Dashboard.jsx
-│   │   │   ├── StartSession.jsx
-│   │   │   ├── ActiveSession.jsx
-│   │   │   ├── SessionHistory.jsx
-│   │   │   ├── SessionDetail.jsx
-│   │   │   ├── Analytics.jsx
-│   │   │   └── Profile.jsx
-│   │   │
-│   │   ├── services/
-│   │   │   ├── api.js
-│   │   │   ├── authService.js
-│   │   │   └── riderSessionService.js
-│   │   │
-│   │   ├── utils/
-│   │   │   ├── calculations.js
-│   │   │   ├── formatters.js
-│   │   │   └── constants.js
-│   │   │
-│   │   ├── styles/
-│   │   │   ├── variables.css
-│   │   │   ├── global.css
-│   │   │   └── responsive.css
-│   │   │
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   │
-│   ├── package.json
-│   └── vite.config.js
-│
-├── backend/
-│   │
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── routers/
-│   │   │       ├── auth.py
-│   │   │       ├── sessions.py
-│   │   │       ├── dashboard.py
-│   │   │       └── analytics.py
-│   │   │
-│   │   ├── models/
-│   │   │   ├── user.py
-│   │   │   └── rider_session.py
-│   │   │
-│   │   ├── schemas/
-│   │   │   ├── auth.py
-│   │   │   └── rider_session.py
-│   │   │
-│   │   ├── services/
-│   │   │   ├── auth_service.py
-│   │   │   ├── session_service.py
-│   │   │   └── analytics_service.py
-│   │   │
-│   │   ├── database.py
-│   │   ├── config.py
-│   │   └── main.py
-│   │
-│   ├── tests/
-│   └── requirements.txt
-│
-├── .github/
-│   └── workflows/
-│
-├── .gitignore
-└── README.md
+### Rider Sessions
+
+The `rider_sessions` table stores:
+
+-   User
+-   Delivery platform
+-   Session date
+-   Start and end time
+-   Starting and ending mileage
+-   Total orders
+-   Gross income
+-   Fuel cost
+-   Other expenses
+-   Notes
+-   Session status
+-   Creation and update timestamps
+
+Performance values such as distance, duration, net income, and
+efficiency metrics are derived from the session data.
+
+------------------------------------------------------------------------
+
+## Security
+
+RiderJob follows a backend-controlled security model.
+
+The backend is responsible for:
+
+-   Authentication
+-   Authorization
+-   Password hashing
+-   JWT validation
+-   Request validation
+-   Business rules
+-   User data isolation
+-   Database access
+-   Sensitive configuration
+
+The frontend is responsible for presentation, user interaction, and
+communication with the backend API.
+
+Database credentials and other sensitive configuration are never exposed
+through the React frontend or committed to the repository.
+
+------------------------------------------------------------------------
+
+## CI/CD
+
+GitHub Actions is used to automatically validate the application.
+
+The development workflow includes:
+
+-   Frontend build verification
+-   ESLint checks
+-   Backend automated tests
+-   Database migration verification
+-   Deployment workflows
+
+The frontend is hosted using GitHub Pages, while the FastAPI backend
+runs separately on Render and communicates with a Neon PostgreSQL
+database.
+
+------------------------------------------------------------------------
+
+## Design
+
+RiderJob uses a dark, technology-focused interface inspired by
+engineering dashboards and developer tools.
+
+The design system uses:
+
+-   Dark navy and black surfaces
+-   Blue primary accents
+-   Compact information cards
+-   Data-focused layouts
+-   Responsive navigation
+-   Platform-specific visual indicators
+-   Consistent form controls
+-   Clear loading, empty, success, and error states
+
+Platform-specific accents are used to distinguish:
+
+``` text
+ShopeeFood → Orange
+GrabFood   → Green
+Lalamove   → Orange / Red
 ```
 
-The structure may evolve as development progresses.
+------------------------------------------------------------------------
 
----
+## Live Application
 
-# Development Phases
+RiderJob is available at:
 
-## Phase 1 — Planning and Requirements
-
-* [x] Define project purpose
-* [x] Define rider workflow
-* [x] Identify supported platforms
-* [x] Define MVP features
-* [x] Define initial database structure
-* [x] Select technology stack
-* [x] Select system architecture
-* [x] Select UI design direction
-
----
-
-## Phase 2 — Project Foundation
-
-### Frontend
-
-* [ ] Create React + Vite application
-* [ ] Install React Router
-* [ ] Configure frontend folder structure
-* [ ] Configure GitHub Pages base path
-* [ ] Configure ESLint
-* [ ] Create initial routes
-
-### Backend
-
-* [ ] Create Python virtual environment
-* [ ] Create FastAPI application
-* [ ] Configure backend folder structure
-* [ ] Configure environment variables
-* [ ] Create health endpoint
-* [ ] Configure CORS
-
-### Database
-
-* [ ] Create Neon PostgreSQL database
-* [ ] Configure backend database connection
-* [ ] Verify database connectivity
-
----
-
-## Phase 3 — Database and Authentication
-
-* [ ] Create `users` table
-* [ ] Create `rider_sessions` table
-* [ ] Configure database models
-* [ ] Configure migrations
-* [ ] User registration
-* [ ] Password hashing
-* [ ] User login
-* [ ] Token authentication
-* [ ] Protected API endpoints
-* [ ] Protected frontend routes
-* [ ] Logout
-* [ ] Persistent authentication
-* [ ] Authentication tests
-
----
-
-## Phase 4 — Rider Session Engine
-
-* [ ] Platform selection
-* [ ] Start session endpoint
-* [ ] Store starting mileage
-* [ ] Automatically record start time
-* [ ] Prevent duplicate active sessions
-* [ ] Retrieve active session
-* [ ] Active session page
-* [ ] Session duration
-* [ ] End session endpoint
-* [ ] Record session results
-* [ ] Validate ending mileage
-* [ ] Automatically calculate session metrics
-* [ ] Session engine tests
-
----
-
-## Phase 5 — Session History
-
-* [ ] Session listing API
-* [ ] Session history page
-* [ ] Session detail API
-* [ ] Session detail page
-* [ ] Platform filtering
-* [ ] Date filtering
-* [ ] Edit session
-* [ ] Delete session
-* [ ] Validation
-* [ ] History tests
-
----
-
-## Phase 6 — Dashboard
-
-* [ ] Dashboard API
-* [ ] Today's statistics
-* [ ] Weekly statistics
-* [ ] Monthly statistics
-* [ ] Lifetime statistics
-* [ ] Recent sessions
-* [ ] Platform overview
-* [ ] Quick start session
-* [ ] Dashboard tests
-
----
-
-## Phase 7 — Analytics
-
-* [ ] Analytics API
-* [ ] Platform earnings comparison
-* [ ] Platform order comparison
-* [ ] Daily earnings trend
-* [ ] Gross earnings
-* [ ] Net earnings
-* [ ] RM / hour
-* [ ] RM / order
-* [ ] RM / kilometre
-* [ ] Distance statistics
-* [ ] Riding time statistics
-* [ ] Fuel expense statistics
-* [ ] Analytics tests
-
----
-
-## Phase 8 — UI / UX
-
-* [ ] Dark technology theme
-* [ ] Desktop sidebar
-* [ ] Mobile navigation
-* [ ] Responsive dashboard
-* [ ] Responsive session pages
-* [ ] Responsive history
-* [ ] Responsive analytics
-* [ ] Loading states
-* [ ] Empty states
-* [ ] Error states
-* [ ] Form feedback
-* [ ] UI polish
-
----
-
-## Phase 9 — CI/CD and Deployment
-
-### CI
-
-* [ ] Frontend build workflow
-* [ ] Frontend lint checks
-* [ ] Backend pytest workflow
-* [ ] Automated test execution
-
-### Frontend Deployment
-
-* [ ] GitHub Pages workflow
-* [ ] Configure production API URL
-* [ ] Deploy frontend
-* [ ] Verify routing
-
-### Backend Deployment
-
-* [ ] Configure Render service
-* [ ] Configure production environment variables
-* [ ] Configure Neon `DB_URL`
-* [ ] Configure production CORS
-* [ ] Deploy FastAPI backend
-* [ ] Verify API health
-
-### Production Verification
-
-* [ ] Registration
-* [ ] Login
-* [ ] Start session
-* [ ] End session
-* [ ] History
-* [ ] Dashboard
-* [ ] Analytics
-* [ ] Mobile testing
-
-Production frontend target:
-
-```text
 https://agien99.github.io/riderjob/
-```
 
----
+------------------------------------------------------------------------
 
-# Future Ideas
+## Development Principles
 
-Possible future features are intentionally excluded from the MVP.
+RiderJob was built around a simple priority:
 
-These may include:
-
-* Weekly riding targets
-* Monthly income targets
-* Fuel efficiency analysis
-* Motorcycle maintenance records
-* Service reminders
-* Tyre change records
-* Engine oil records
-* Cost per kilometre
-* Profit after motorcycle running cost
-* Individual delivery records
-* Area / zone performance
-* Peak hour analytics
-* Weather correlation
-* Export to CSV
-* Export to PDF
-* Progressive Web App support
-* Offline session recording
-* Push notifications
-* Google authentication
-* Multi-motorcycle support
-* Additional rider platforms
-
----
-
-# Development Principles
-
-RiderJob should remain practical.
-
-Features should solve real rider problems rather than exist only for demonstration purposes.
-
-Development priorities:
-
-```text
+``` text
 Useful
-↓
+  ↓
 Reliable
-↓
+  ↓
 Simple
-↓
+  ↓
 Fast
-↓
-Visually polished
+  ↓
+Visually Polished
 ```
 
-The application should be especially quick to use on mobile because rider sessions are normally started and ended while away from a desktop computer.
+The application exists to solve an actual rider workflow rather than
+simply demonstrate technical features.
 
-The backend should remain responsible for:
+Its architecture keeps presentation, application logic, and persistence
+separated while maintaining a workflow that remains quick enough to use
+during real rider sessions.
 
-* Authentication
-* Authorization
-* Validation
-* Business rules
-* Database access
-* Sensitive configuration
-
-The frontend should remain responsible for:
-
-* User interface
-* User interaction
-* Client-side presentation
-* API communication
-
-Sensitive credentials must never be committed to the repository.
-
----
-
-# Project Status
-
-**Current Stage:** Planning / Initial Development
-
-**Version:** Pre-Alpha
-
-Current architecture:
-
-```text
-React + Vite
-      ↓
-FastAPI REST API
-      ↓
-Neon PostgreSQL
-```
-
-The project is currently being designed and developed.
-
----
+------------------------------------------------------------------------
 
 ## Author
 
 Developed by **Agien99**
 
 Software Engineer / System Developer
+
+**Ride. Track. Improve.**
 
 > Built by a Developer, for Real Life.
