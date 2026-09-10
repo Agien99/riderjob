@@ -843,3 +843,287 @@ def test_end_session_rejects_invalid_mileage(
         "End mileage cannot be lower"
         in response.json()["detail"]
     )
+
+def test_update_session_success(
+    monkeypatch,
+):
+    user = make_user()
+
+    rider_session = make_session(
+        user.id
+    )
+
+    rider_session.status = (
+        "completed"
+    )
+
+    rider_session.end_time = (
+        datetime.now(
+            timezone.utc
+        )
+    )
+
+    rider_session.end_mileage = (
+        Decimal("5262.00")
+    )
+
+    updated_session = make_session(
+        user.id
+    )
+
+    updated_session.id = (
+        rider_session.id
+    )
+
+    updated_session.status = (
+        "completed"
+    )
+
+    updated_session.platform = (
+        "grabfood"
+    )
+
+    updated_session.end_time = (
+        rider_session.end_time
+    )
+
+    updated_session.start_mileage = (
+        Decimal("5235.00")
+    )
+
+    updated_session.end_mileage = (
+        Decimal("5265.00")
+    )
+
+    updated_session.total_orders = 4
+
+    updated_session.gross_income = (
+        Decimal("30.00")
+    )
+
+    updated_session.fuel_cost = (
+        Decimal("5.00")
+    )
+
+    updated_session.other_expenses = (
+        Decimal("2.00")
+    )
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=rider_session
+        ),
+    )
+
+    session_data = (
+        SessionResponse.model_validate(
+            updated_session
+        )
+    )
+
+    result = SessionDetailResponse(
+        **session_data.model_dump(),
+        metrics=SessionMetrics(
+            distance_km=Decimal(
+                "30.00"
+            ),
+            duration_minutes=86,
+            net_income=Decimal(
+                "23.00"
+            ),
+            income_per_hour=Decimal(
+                "16.05"
+            ),
+            income_per_order=Decimal(
+                "5.75"
+            ),
+            income_per_km=Decimal(
+                "0.77"
+            ),
+        ),
+    )
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "update_completed_session",
+        MagicMock(
+            return_value=result
+        ),
+    )
+
+    response = client.put(
+        (
+            f"/api/sessions/"
+            f"{rider_session.id}"
+        ),
+        json={
+            "platform": "grabfood",
+            "start_mileage": "5235.00",
+            "end_mileage": "5265.00",
+            "total_orders": 4,
+            "gross_income": "30.00",
+            "fuel_cost": "5.00",
+            "other_expenses": "2.00",
+            "notes": (
+                "Updated session"
+            ),
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert (
+        data["platform"]
+        == "grabfood"
+    )
+
+    assert (
+        data["start_mileage"]
+        == "5235.00"
+    )
+
+    assert (
+        data["end_mileage"]
+        == "5265.00"
+    )
+
+    assert (
+        data["total_orders"]
+        == 4
+    )
+
+    assert (
+        data["metrics"][
+            "distance_km"
+        ]
+        == "30.00"
+    )
+
+    assert (
+        data["metrics"][
+            "net_income"
+        ]
+        == "23.00"
+    )
+
+
+def test_update_session_not_found(
+    monkeypatch,
+):
+    user = make_user()
+
+    session_id = uuid.uuid4()
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=None
+        ),
+    )
+
+    response = client.put(
+        (
+            f"/api/sessions/"
+            f"{session_id}"
+        ),
+        json={
+            "platform": "shopeefood",
+            "start_mileage": "5234.00",
+            "end_mileage": "5262.00",
+            "total_orders": 2,
+            "gross_income": "11.91",
+            "fuel_cost": "0.00",
+            "other_expenses": "0.00",
+        },
+    )
+
+    assert response.status_code == 404
+
+    assert response.json()[
+        "detail"
+    ] == (
+        "Rider session not found."
+    )
+
+
+def test_update_session_rejects_active(
+    monkeypatch,
+):
+    user = make_user()
+
+    rider_session = make_session(
+        user.id
+    )
+
+    app.dependency_overrides[
+        get_current_user
+    ] = lambda: user
+
+    app.dependency_overrides[
+        get_db
+    ] = override_db
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "get_session_by_id",
+        MagicMock(
+            return_value=rider_session
+        ),
+    )
+
+    monkeypatch.setattr(
+        "app.api.routers.sessions."
+        "update_completed_session",
+        MagicMock(
+            side_effect=ValueError(
+                "Only completed rider "
+                "sessions can be edited."
+            )
+        ),
+    )
+
+    response = client.put(
+        (
+            f"/api/sessions/"
+            f"{rider_session.id}"
+        ),
+        json={
+            "platform": "shopeefood",
+            "start_mileage": "5234.00",
+            "end_mileage": "5262.00",
+            "total_orders": 2,
+            "gross_income": "11.91",
+            "fuel_cost": "0.00",
+            "other_expenses": "0.00",
+        },
+    )
+
+    assert response.status_code == 400
+
+    assert response.json()[
+        "detail"
+    ] == (
+        "Only completed rider "
+        "sessions can be edited."
+    )

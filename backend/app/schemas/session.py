@@ -104,3 +104,51 @@ class SessionMetrics(BaseModel):
 
 class SessionDetailResponse(SessionResponse):
     metrics: SessionMetrics
+
+class UpdateSessionRequest(BaseModel):
+    platform: Literal[
+        "shopeefood",
+        "grabfood",
+        "lalamove",
+    ]
+
+    start_mileage: Decimal = Field(
+        ge=0,
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    end_mileage: Decimal = Field(
+        ge=0,
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    total_orders: int = Field(
+        ge=0,
+    )
+
+    gross_income: Decimal = Field(
+        ge=0,
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    fuel_cost: Decimal = Field(
+        default=Decimal("0.00"),
+        ge=0,
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    other_expenses: Decimal = Field(
+        default=Decimal("0.00"),
+        ge=0,
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    notes: str | None = Field(
+        default=None,
+        max_length=2000,
+    )

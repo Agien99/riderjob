@@ -14,6 +14,7 @@ from app.schemas.session import (
     EndSessionRequest,
     SessionDetailResponse,
     SessionResponse,
+    UpdateSessionRequest,
 )
 from app.services.session_calculations import (
     build_session_metrics,
@@ -212,4 +213,61 @@ def build_session_detail(
     return SessionDetailResponse(
         **session_data.model_dump(),
         metrics=metrics,
+    )
+
+def update_completed_session(
+    db: Session,
+    rider_session: RiderSession,
+    request: UpdateSessionRequest,
+) -> SessionDetailResponse:
+    if rider_session.status != "completed":
+        raise ValueError(
+            "Only completed rider sessions "
+            "can be edited."
+        )
+
+    calculate_distance(
+        request.start_mileage,
+        request.end_mileage,
+    )
+
+    rider_session.platform = (
+        request.platform
+    )
+
+    rider_session.start_mileage = (
+        request.start_mileage
+    )
+
+    rider_session.end_mileage = (
+        request.end_mileage
+    )
+
+    rider_session.total_orders = (
+        request.total_orders
+    )
+
+    rider_session.gross_income = (
+        request.gross_income
+    )
+
+    rider_session.fuel_cost = (
+        request.fuel_cost
+    )
+
+    rider_session.other_expenses = (
+        request.other_expenses
+    )
+
+    rider_session.notes = (
+        request.notes.strip()
+        if request.notes
+        else None
+    )
+
+    db.commit()
+    db.refresh(rider_session)
+
+    return build_session_detail(
+        rider_session
     )

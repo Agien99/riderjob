@@ -11,6 +11,7 @@ import pytest
 from app.models import RiderSession
 from app.schemas.session import (
     EndSessionRequest,
+    UpdateSessionRequest,
 )
 from app.services.session_service import (
     build_session_detail,
@@ -19,6 +20,7 @@ from app.services.session_service import (
     get_active_session,
     get_completed_sessions,
     get_session_by_id,
+    update_completed_session,
 )
 
 
@@ -526,3 +528,217 @@ def test_end_session_preserves_notes_when_missing():
         rider_session.notes
         == "Started after lunch"
     )
+
+def test_update_completed_session():
+    db = make_db()
+
+    rider_session = (
+        make_active_session()
+    )
+
+    rider_session.status = (
+        "completed"
+    )
+
+    rider_session.start_time = (
+        datetime(
+            2026,
+            8,
+            16,
+            9,
+            10,
+            tzinfo=timezone.utc,
+        )
+    )
+
+    rider_session.end_time = (
+        datetime(
+            2026,
+            8,
+            16,
+            10,
+            36,
+            tzinfo=timezone.utc,
+        )
+    )
+
+    rider_session.end_mileage = (
+        Decimal("5262.00")
+    )
+
+    request = UpdateSessionRequest(
+        platform="grabfood",
+        start_mileage=Decimal(
+            "5235.00"
+        ),
+        end_mileage=Decimal(
+            "5265.00"
+        ),
+        total_orders=4,
+        gross_income=Decimal(
+            "30.00"
+        ),
+        fuel_cost=Decimal(
+            "5.00"
+        ),
+        other_expenses=Decimal(
+            "2.00"
+        ),
+        notes="  Updated session  ",
+    )
+
+    result = update_completed_session(
+        db=db,
+        rider_session=rider_session,
+        request=request,
+    )
+
+    assert (
+        rider_session.platform
+        == "grabfood"
+    )
+
+    assert (
+        rider_session.start_mileage
+        == Decimal("5235.00")
+    )
+
+    assert (
+        rider_session.end_mileage
+        == Decimal("5265.00")
+    )
+
+    assert (
+        rider_session.total_orders
+        == 4
+    )
+
+    assert (
+        rider_session.gross_income
+        == Decimal("30.00")
+    )
+
+    assert (
+        rider_session.fuel_cost
+        == Decimal("5.00")
+    )
+
+    assert (
+        rider_session.other_expenses
+        == Decimal("2.00")
+    )
+
+    assert (
+        rider_session.notes
+        == "Updated session"
+    )
+
+    assert (
+        result.metrics.distance_km
+        == Decimal("30.00")
+    )
+
+    assert (
+        result.metrics.net_income
+        == Decimal("23.00")
+    )
+
+    assert (
+        result.metrics.income_per_order
+        == Decimal("5.75")
+    )
+
+    db.commit.assert_called_once()
+    db.refresh.assert_called_once()
+
+
+def test_update_completed_session_rejects_active():
+    db = make_db()
+
+    rider_session = (
+        make_active_session()
+    )
+
+    request = UpdateSessionRequest(
+        platform="shopeefood",
+        start_mileage=Decimal(
+            "5234.00"
+        ),
+        end_mileage=Decimal(
+            "5262.00"
+        ),
+        total_orders=2,
+        gross_income=Decimal(
+            "11.91"
+        ),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Only completed rider "
+            "sessions can be edited."
+        ),
+    ):
+        update_completed_session(
+            db=db,
+            rider_session=(
+                rider_session
+            ),
+            request=request,
+        )
+
+    db.commit.assert_not_called()
+
+
+def test_update_completed_session_rejects_lower_mileage():
+    db = make_db()
+
+    rider_session = (
+        make_active_session()
+    )
+
+    rider_session.status = (
+        "completed"
+    )
+
+    rider_session.end_time = (
+        datetime.now(
+            timezone.utc
+        )
+    )
+
+    rider_session.end_mileage = (
+        Decimal("5262.00")
+    )
+
+    request = UpdateSessionRequest(
+        platform="shopeefood",
+        start_mileage=Decimal(
+            "5300.00"
+        ),
+        end_mileage=Decimal(
+            "5290.00"
+        ),
+        total_orders=2,
+        gross_income=Decimal(
+            "11.91"
+        ),
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "End mileage cannot "
+            "be lower"
+        ),
+    ):
+        update_completed_session(
+            db=db,
+            rider_session=(
+                rider_session
+            ),
+            request=request,
+        )
+
+    db.commit.assert_not_called()

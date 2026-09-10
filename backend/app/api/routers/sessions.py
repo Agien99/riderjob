@@ -18,6 +18,7 @@ from app.schemas.session import (
     SessionDetailResponse,
     SessionResponse,
     StartSessionRequest,
+    UpdateSessionRequest,
 )
 from app.services.session_service import (
     build_session_detail,
@@ -26,6 +27,7 @@ from app.services.session_service import (
     get_active_session,
     get_completed_sessions,
     get_session_by_id,
+    update_completed_session,
 )
 
 
@@ -175,6 +177,48 @@ def read_session_detail(
             detail=str(error),
         ) from error
 
+@router.put(
+    "/{session_id}",
+    response_model=SessionDetailResponse,
+)
+def update_session(
+    session_id: UUID,
+    request: UpdateSessionRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(
+        get_current_user
+    ),
+):
+    rider_session = get_session_by_id(
+        db,
+        session_id,
+        current_user.id,
+    )
+
+    if rider_session is None:
+        raise HTTPException(
+            status_code=(
+                status.HTTP_404_NOT_FOUND
+            ),
+            detail=(
+                "Rider session not found."
+            ),
+        )
+
+    try:
+        return update_completed_session(
+            db=db,
+            rider_session=rider_session,
+            request=request,
+        )
+
+    except ValueError as error:
+        raise HTTPException(
+            status_code=(
+                status.HTTP_400_BAD_REQUEST
+            ),
+            detail=str(error),
+        ) from error
 
 @router.post(
     "/{session_id}/end",
