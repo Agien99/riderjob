@@ -56,13 +56,11 @@ function Dashboard() {
   const loadDashboard =
     useCallback(async () => {
       try {
-        setLoading(true)
-        setError('')
-
         const data =
           await getDashboard(period)
 
         setDashboard(data)
+        setError('')
       } catch (err) {
         setError(
           err.message ||
@@ -76,6 +74,26 @@ function Dashboard() {
   useEffect(() => {
     loadDashboard()
   }, [loadDashboard])
+
+  function handlePeriodChange(
+    nextPeriod,
+  ) {
+    if (nextPeriod === period) {
+      return
+    }
+
+    setLoading(true)
+    setError('')
+    setPeriod(nextPeriod)
+  }
+
+
+  async function handleRetry() {
+    setLoading(true)
+    setError('')
+
+    await loadDashboard()
+  }
 
   function formatMoney(value) {
     const amount = Number(
@@ -224,7 +242,7 @@ function Dashboard() {
                     : 'dashboard-period-button'
                 }
                 onClick={() =>
-                  setPeriod(
+                  handlePeriodChange(
                     item.value,
                   )
                 }
@@ -254,7 +272,7 @@ function Dashboard() {
 
           <button
             type="button"
-            onClick={loadDashboard}
+            onClick={handleRetry}
           >
             Try Again
           </button>
