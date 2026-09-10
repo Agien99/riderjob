@@ -30,6 +30,13 @@ const PERIODS = [
 ]
 
 
+const platformLabels = {
+  shopeefood: 'ShopeeFood',
+  grabfood: 'GrabFood',
+  lalamove: 'Lalamove',
+}
+
+
 function Dashboard() {
   const navigate = useNavigate()
 
@@ -52,6 +59,7 @@ function Dashboard() {
     error,
     setError,
   ] = useState('')
+
 
   useEffect(() => {
     let cancelled = false
@@ -152,13 +160,15 @@ function Dashboard() {
       return '0 hr'
     }
 
-    const totalMinutes = Math.round(
-      hours * 60,
-    )
+    const totalMinutes =
+      Math.round(
+        hours * 60,
+      )
 
-    const wholeHours = Math.floor(
-      totalMinutes / 60,
-    )
+    const wholeHours =
+      Math.floor(
+        totalMinutes / 60,
+      )
 
     const minutes =
       totalMinutes % 60
@@ -199,16 +209,29 @@ function Dashboard() {
 
 
   function formatPlatform(platform) {
-    const labels = {
-      shopeefood: 'ShopeeFood',
-      grabfood: 'GrabFood',
-      lalamove: 'Lalamove',
+    return (
+      platformLabels[platform] ||
+      platform ||
+      '-'
+    )
+  }
+
+
+  function getPlatformBadgeClass(
+    platform,
+  ) {
+    const classes = {
+      shopeefood:
+        'ui-badge-shopeefood',
+      grabfood:
+        'ui-badge-grabfood',
+      lalamove:
+        'ui-badge-lalamove',
     }
 
     return (
-      labels[platform] ||
-      platform ||
-      '-'
+      classes[platform] ||
+      'ui-badge-primary'
     )
   }
 
@@ -235,37 +258,47 @@ function Dashboard() {
 
   return (
     <main className="dashboard-page">
-      <header className="dashboard-header">
-        <div>
-          <p className="dashboard-eyebrow">
-            RIDER PERFORMANCE
-          </p>
+      <div className="ui-page-header">
+        <div className="ui-page-header-content">
+          <span className="ui-page-eyebrow">
+            Rider Performance
+          </span>
 
-          <h1>
+          <h1 className="ui-page-title">
             Dashboard
           </h1>
 
-          <p className="dashboard-subtitle">
+          <p className="ui-page-subtitle">
             Track your earnings,
             activity and riding
             efficiency.
           </p>
         </div>
 
-        <button
-          type="button"
-          className="dashboard-start-button"
-          onClick={() =>
-            navigate('/session/start')
-          }
-        >
-          + Start Session
-        </button>
-      </header>
+        <div className="ui-page-actions">
+          <button
+            type="button"
+            className="
+              ui-button
+              ui-button-primary
+            "
+            onClick={() =>
+              navigate(
+                '/session/start',
+              )
+            }
+          >
+            + Start Session
+          </button>
+        </div>
+      </div>
 
 
       <section className="dashboard-period-section">
-        <div className="dashboard-period-tabs">
+        <div
+          className="dashboard-period-tabs"
+          aria-label="Dashboard period"
+        >
           {PERIODS.map(
             (item) => (
               <button
@@ -273,8 +306,11 @@ function Dashboard() {
                 type="button"
                 className={
                   period === item.value
-                    ? 'dashboard-period-button active'
+                    ? 'dashboard-period-button dashboard-period-button-active'
                     : 'dashboard-period-button'
+                }
+                aria-pressed={
+                  period === item.value
                 }
                 onClick={() =>
                   handlePeriodChange(
@@ -294,7 +330,9 @@ function Dashboard() {
               dashboard.start_date,
             )}
 
-            {' — '}
+            <span aria-hidden="true">
+              {' — '}
+            </span>
 
             {formatDate(
               dashboard.end_date,
@@ -305,13 +343,28 @@ function Dashboard() {
 
 
       {error && (
-        <div className="dashboard-error">
-          <span>
+        <div
+          className="
+            ui-state
+            ui-state-error
+          "
+          role="alert"
+        >
+          <h2>
+            Unable to Load Dashboard
+          </h2>
+
+          <p>
             {error}
-          </span>
+          </p>
 
           <button
             type="button"
+            className="
+              ui-button
+              ui-button-danger
+              ui-button-sm
+            "
             onClick={handleRetry}
           >
             Try Again
@@ -321,10 +374,15 @@ function Dashboard() {
 
 
       {loading && (
-        <div className="dashboard-loading">
-          Loading{' '}
-          {getPeriodLabel()}{' '}
-          performance...
+        <div
+          className="ui-state"
+          aria-live="polite"
+        >
+          <p>
+            Loading{' '}
+            {getPeriodLabel()}{' '}
+            performance...
+          </p>
         </div>
       )}
 
@@ -334,8 +392,17 @@ function Dashboard() {
         dashboard &&
         metrics && (
           <>
-            <section className="dashboard-metrics">
-              <article className="dashboard-card dashboard-card-primary">
+            <section
+              className="dashboard-metrics"
+              aria-label="Performance summary"
+            >
+              <article
+                className="
+                  dashboard-card
+                  dashboard-card-primary
+                  ui-card
+                "
+              >
                 <div>
                   <span className="dashboard-card-label">
                     Net Earnings
@@ -355,7 +422,7 @@ function Dashboard() {
               </article>
 
 
-              <article className="dashboard-card">
+              <article className="dashboard-card ui-card">
                 <span className="dashboard-card-label">
                   Gross Earnings
                 </span>
@@ -372,7 +439,7 @@ function Dashboard() {
               </article>
 
 
-              <article className="dashboard-card">
+              <article className="dashboard-card ui-card">
                 <span className="dashboard-card-label">
                   Total Orders
                 </span>
@@ -395,7 +462,7 @@ function Dashboard() {
               </article>
 
 
-              <article className="dashboard-card">
+              <article className="dashboard-card ui-card">
                 <span className="dashboard-card-label">
                   Distance
                 </span>
@@ -414,7 +481,7 @@ function Dashboard() {
               </article>
 
 
-              <article className="dashboard-card">
+              <article className="dashboard-card ui-card">
                 <span className="dashboard-card-label">
                   Riding Time
                 </span>
@@ -431,7 +498,7 @@ function Dashboard() {
               </article>
 
 
-              <article className="dashboard-card">
+              <article className="dashboard-card ui-card">
                 <span className="dashboard-card-label">
                   RM / Hour
                 </span>
@@ -453,7 +520,7 @@ function Dashboard() {
               </article>
 
 
-              <article className="dashboard-card">
+              <article className="dashboard-card ui-card">
                 <span className="dashboard-card-label">
                   RM / Order
                 </span>
@@ -475,7 +542,7 @@ function Dashboard() {
               </article>
 
 
-              <article className="dashboard-card">
+              <article className="dashboard-card ui-card">
                 <span className="dashboard-card-label">
                   RM / KM
                 </span>
@@ -499,12 +566,17 @@ function Dashboard() {
 
 
             <div className="dashboard-content-grid">
-              <section className="dashboard-section dashboard-platform-section">
+              <section
+                className="
+                  dashboard-section
+                  ui-card
+                "
+              >
                 <div className="dashboard-section-header">
                   <div>
-                    <p className="dashboard-eyebrow">
-                      PLATFORM PERFORMANCE
-                    </p>
+                    <span className="ui-page-eyebrow">
+                      Platform Performance
+                    </span>
 
                     <h2>
                       {getPeriodLabel()}
@@ -527,7 +599,14 @@ function Dashboard() {
                       >
                         <div className="dashboard-platform-top">
                           <div>
-                            <span className="dashboard-platform-name">
+                            <span
+                              className={
+                                `ui-badge ` +
+                                `${getPlatformBadgeClass(
+                                  item.platform,
+                                )}`
+                              }
+                            >
                               {formatPlatform(
                                 item.platform,
                               )}
@@ -546,11 +625,17 @@ function Dashboard() {
                             </small>
                           </div>
 
-                          <strong>
-                            {formatMoney(
-                              item.net_income,
-                            )}
-                          </strong>
+                          <div className="dashboard-platform-earnings">
+                            <span>
+                              Net Earnings
+                            </span>
+
+                            <strong>
+                              {formatMoney(
+                                item.net_income,
+                              )}
+                            </strong>
+                          </div>
                         </div>
 
 
@@ -567,7 +652,6 @@ function Dashboard() {
                             </strong>
                           </div>
 
-
                           <div>
                             <span>
                               Gross
@@ -579,7 +663,6 @@ function Dashboard() {
                               )}
                             </strong>
                           </div>
-
 
                           <div>
                             <span>
@@ -600,12 +683,17 @@ function Dashboard() {
               </section>
 
 
-              <section className="dashboard-section dashboard-recent-section">
+              <section
+                className="
+                  dashboard-section
+                  ui-card
+                "
+              >
                 <div className="dashboard-section-header">
                   <div>
-                    <p className="dashboard-eyebrow">
-                      RECENT ACTIVITY
-                    </p>
+                    <span className="ui-page-eyebrow">
+                      Recent Activity
+                    </span>
 
                     <h2>
                       Recent Sessions
@@ -614,9 +702,15 @@ function Dashboard() {
 
                   <button
                     type="button"
-                    className="dashboard-link-button"
+                    className="
+                      ui-button
+                      ui-button-ghost
+                      ui-button-sm
+                    "
                     onClick={() =>
-                      navigate('/sessions')
+                      navigate(
+                        '/sessions',
+                      )
                     }
                   >
                     View All →
@@ -628,12 +722,17 @@ function Dashboard() {
                 0 ? (
                   <div className="dashboard-empty">
                     <p>
-                      No completed sessions
-                      yet.
+                      No completed
+                      sessions yet.
                     </p>
 
                     <button
                       type="button"
+                      className="
+                        ui-button
+                        ui-button-secondary
+                        ui-button-sm
+                      "
                       onClick={() =>
                         navigate(
                           '/session/start',
@@ -663,8 +762,10 @@ function Dashboard() {
                           <div className="dashboard-recent-main">
                             <span
                               className={
-                                `dashboard-recent-platform ` +
-                                `dashboard-recent-${session.platform}`
+                                `ui-badge ` +
+                                `${getPlatformBadgeClass(
+                                  session.platform,
+                                )}`
                               }
                             >
                               {formatPlatform(
@@ -699,6 +800,13 @@ function Dashboard() {
                               )}
                             </strong>
                           </div>
+
+                          <span
+                            className="dashboard-recent-arrow"
+                            aria-hidden="true"
+                          >
+                            →
+                          </span>
                         </button>
                       ),
                     )}
