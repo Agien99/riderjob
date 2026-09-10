@@ -63,3 +63,14 @@ export function updateRiderSession(
     },
   )
 }
+
+export function deleteRiderSession(
+  sessionId,
+) {
+  return apiRequest(
+    `/api/sessions/${sessionId}`,
+    {
+      method: 'DELETE',
+    },
+  )
+}

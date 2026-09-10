@@ -10,6 +10,7 @@ import {
 import {
   getSessionDetail,
   updateRiderSession,
+  deleteRiderSession,
 } from '../services/sessionService'
 
 import '../styles/sessionDetail.css'
@@ -47,6 +48,16 @@ function SessionDetail() {
   const [
     editError,
     setEditError,
+  ] = useState('')
+
+  const [
+  deleting,
+  setDeleting,
+  ] = useState(false)
+
+  const [
+    deleteError,
+    setDeleteError,
   ] = useState('')
 
   const [
@@ -347,6 +358,33 @@ function SessionDetail() {
     }
   }
 
+  async function handleDelete() {
+    const confirmed = window.confirm(
+      'Delete this completed session? ' +
+        'This action cannot be undone.',
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      setDeleting(true)
+      setDeleteError('')
+
+      await deleteRiderSession(id)
+
+      navigate('/sessions')
+    } catch (err) {
+      setDeleteError(
+        err.message ||
+          'Unable to delete session.',
+      )
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   if (loading) {
     return (
       <main className="detail-page">
@@ -426,16 +464,36 @@ function SessionDetail() {
           </span>
 
           {!isEditing && (
-            <button
-              type="button"
-              className="detail-edit-button"
-              onClick={startEditing}
-            >
-              Edit Session
-            </button>
+            <>
+              <button
+                type="button"
+                className="detail-edit-button"
+                onClick={startEditing}
+                disabled={deleting}
+              >
+                Edit Session
+              </button>
+
+              <button
+                type="button"
+                className="detail-delete-button"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting
+                  ? 'Deleting...'
+                  : 'Delete Session'}
+              </button>
+            </>
           )}
         </div>
       </div>
+
+      {deleteError && (
+        <div className="detail-delete-error">
+          {deleteError}
+        </div>
+      )}
 
       {isEditing ? (
         <form
