@@ -40,3 +40,11 @@ export function getSessionHistory() {
     '/api/sessions',
   )
 }
+
+export function getSessionDetail(
+  sessionId,
+) {
+  return apiRequest(
+    `/api/sessions/${sessionId}`,
+  )
+}
