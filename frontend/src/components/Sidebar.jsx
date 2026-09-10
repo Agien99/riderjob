@@ -32,14 +32,11 @@ function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">
-        <div className="sidebar-brand-icon">
-          RJ
-        </div>
-
-        <div>
-          <h1>RiderJob</h1>
-          <span>Ride. Track. Improve.</span>
-        </div>
+        <img
+          src={`${import.meta.env.BASE_URL}main-logo.png`}
+          alt="RiderJob"
+          className="sidebar-brand-logo"
+        />
       </div>
 
       <nav className="sidebar-navigation">
@@ -64,7 +61,9 @@ function Sidebar() {
 
       <div className="sidebar-footer">
         <span>RiderJob</span>
-        <small>Built by a Developer, for Real Life.</small>
+        <small>
+          Built by a Developer, for Real Life.
+        </small>
       </div>
     </aside>
   )
