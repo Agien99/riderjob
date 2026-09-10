@@ -160,13 +160,15 @@ function Analytics() {
       return '0 hr'
     }
 
-    const totalMinutes = Math.round(
-      hours * 60,
-    )
+    const totalMinutes =
+      Math.round(
+        hours * 60,
+      )
 
-    const wholeHours = Math.floor(
-      totalMinutes / 60,
-    )
+    const wholeHours =
+      Math.floor(
+        totalMinutes / 60,
+      )
 
     const minutes =
       totalMinutes % 60
@@ -234,12 +236,32 @@ function Analytics() {
   }
 
 
+  function getPlatformBadgeClass(
+    platform,
+  ) {
+    const classes = {
+      shopeefood:
+        'ui-badge-shopeefood',
+      grabfood:
+        'ui-badge-grabfood',
+      lalamove:
+        'ui-badge-lalamove',
+    }
+
+    return (
+      classes[platform] ||
+      'ui-badge-primary'
+    )
+  }
+
+
   function getPeriodLabel() {
     return (
       PERIODS.find(
         (item) =>
           item.value === period,
-      )?.label || 'Last 30 Days'
+      )?.label ||
+      'Last 30 Days'
     )
   }
 
@@ -285,6 +307,7 @@ function Analytics() {
   const highlights =
     analytics?.highlights
 
+
   const maximumEarnings = Math.max(
     0,
     ...earningsTrend.map(
@@ -300,13 +323,17 @@ function Analytics() {
     ),
   )
 
+
   const maximumOrders = Math.max(
     0,
     ...ordersTrend.map(
       (item) =>
-        Number(item.orders || 0),
+        Number(
+          item.orders || 0,
+        ),
     ),
   )
+
 
   const hasActivity =
     Number(
@@ -316,27 +343,30 @@ function Analytics() {
 
   return (
     <main className="analytics-page">
-      <header className="analytics-header">
-        <div>
-          <p className="analytics-eyebrow">
-            RIDER INSIGHTS
-          </p>
+      <div className="ui-page-header">
+        <div className="ui-page-header-content">
+          <span className="ui-page-eyebrow">
+            Rider Insights
+          </span>
 
-          <h1>
+          <h1 className="ui-page-title">
             Analytics
           </h1>
 
-          <p className="analytics-subtitle">
+          <p className="ui-page-subtitle">
             Understand your earnings,
             efficiency and platform
             performance over time.
           </p>
         </div>
-      </header>
+      </div>
 
 
       <section className="analytics-period-section">
-        <div className="analytics-period-tabs">
+        <div
+          className="analytics-period-tabs"
+          aria-label="Analytics period"
+        >
           {PERIODS.map(
             (item) => (
               <button
@@ -344,8 +374,11 @@ function Analytics() {
                 type="button"
                 className={
                   period === item.value
-                    ? 'analytics-period-button active'
+                    ? 'analytics-period-button analytics-period-button-active'
                     : 'analytics-period-button'
+                }
+                aria-pressed={
+                  period === item.value
                 }
                 onClick={() =>
                   handlePeriodChange(
@@ -365,7 +398,9 @@ function Analytics() {
               analytics.start_date,
             )}
 
-            {' — '}
+            <span aria-hidden="true">
+              {' — '}
+            </span>
 
             {formatDate(
               analytics.end_date,
@@ -376,13 +411,28 @@ function Analytics() {
 
 
       {error && (
-        <div className="analytics-error">
-          <span>
+        <div
+          className="
+            ui-state
+            ui-state-error
+          "
+          role="alert"
+        >
+          <h2>
+            Unable to Load Analytics
+          </h2>
+
+          <p>
             {error}
-          </span>
+          </p>
 
           <button
             type="button"
+            className="
+              ui-button
+              ui-button-danger
+              ui-button-sm
+            "
             onClick={handleRetry}
           >
             Try Again
@@ -392,10 +442,15 @@ function Analytics() {
 
 
       {loading && (
-        <div className="analytics-loading">
-          Loading{' '}
-          {getPeriodLabel()}{' '}
-          analytics...
+        <div
+          className="ui-state"
+          aria-live="polite"
+        >
+          <p>
+            Loading{' '}
+            {getPeriodLabel()}{' '}
+            analytics...
+          </p>
         </div>
       )}
 
@@ -405,8 +460,17 @@ function Analytics() {
         analytics &&
         summary && (
           <>
-            <section className="analytics-summary-grid">
-              <article className="analytics-summary-card analytics-summary-primary">
+            <section
+              className="analytics-summary-grid"
+              aria-label="Analytics summary"
+            >
+              <article
+                className="
+                  analytics-summary-card
+                  analytics-summary-primary
+                  ui-card
+                "
+              >
                 <span>
                   Net Earnings
                 </span>
@@ -423,7 +487,12 @@ function Analytics() {
               </article>
 
 
-              <article className="analytics-summary-card">
+              <article
+                className="
+                  analytics-summary-card
+                  ui-card
+                "
+              >
                 <span>
                   Gross Earnings
                 </span>
@@ -440,7 +509,12 @@ function Analytics() {
               </article>
 
 
-              <article className="analytics-summary-card">
+              <article
+                className="
+                  analytics-summary-card
+                  ui-card
+                "
+              >
                 <span>
                   Orders
                 </span>
@@ -455,7 +529,12 @@ function Analytics() {
               </article>
 
 
-              <article className="analytics-summary-card">
+              <article
+                className="
+                  analytics-summary-card
+                  ui-card
+                "
+              >
                 <span>
                   Distance
                 </span>
@@ -473,7 +552,12 @@ function Analytics() {
               </article>
 
 
-              <article className="analytics-summary-card">
+              <article
+                className="
+                  analytics-summary-card
+                  ui-card
+                "
+              >
                 <span>
                   Riding Time
                 </span>
@@ -490,7 +574,12 @@ function Analytics() {
               </article>
 
 
-              <article className="analytics-summary-card">
+              <article
+                className="
+                  analytics-summary-card
+                  ui-card
+                "
+              >
                 <span>
                   Sessions
                 </span>
@@ -507,78 +596,70 @@ function Analytics() {
 
 
             <section className="analytics-efficiency-grid">
-              <article>
+              <article className="ui-card">
                 <span>
                   RM / Hour
                 </span>
 
                 <strong>
-                  {
-                    summary.income_per_hour ===
-                    null
-                      ? '-'
-                      : formatMoney(
-                          summary.income_per_hour,
-                        )
-                  }
+                  {summary.income_per_hour ===
+                  null
+                    ? '-'
+                    : formatMoney(
+                        summary.income_per_hour,
+                      )}
                 </strong>
               </article>
 
-              <article>
+              <article className="ui-card">
                 <span>
                   RM / Order
                 </span>
 
                 <strong>
-                  {
-                    summary.income_per_order ===
-                    null
-                      ? '-'
-                      : formatMoney(
-                          summary.income_per_order,
-                        )
-                  }
+                  {summary.income_per_order ===
+                  null
+                    ? '-'
+                    : formatMoney(
+                        summary.income_per_order,
+                      )}
                 </strong>
               </article>
 
-              <article>
+              <article className="ui-card">
                 <span>
                   RM / KM
                 </span>
 
                 <strong>
-                  {
-                    summary.income_per_km ===
-                    null
-                      ? '-'
-                      : formatMoney(
-                          summary.income_per_km,
-                        )
-                  }
+                  {summary.income_per_km ===
+                  null
+                    ? '-'
+                    : formatMoney(
+                        summary.income_per_km,
+                      )}
                 </strong>
               </article>
 
-              <article>
+              <article className="ui-card">
                 <span>
                   Expense Ratio
                 </span>
 
                 <strong>
-                  {
-                    summary.expense_ratio ===
-                    null
-                      ? '-'
-                      : `${formatNumber(
-                          summary.expense_ratio,
-                        )}%`
-                  }
+                  {summary.expense_ratio ===
+                  null
+                    ? '-'
+                    : `${formatNumber(
+                        summary.expense_ratio,
+                      )}%`}
                 </strong>
               </article>
             </section>
 
 
             {!hasActivity && (
-              <section className="analytics-empty-state">
+              <section className="ui-state">
                 <h2>
                   No activity for this
                   period
@@ -593,12 +674,17 @@ function Analytics() {
 
 
             <div className="analytics-chart-grid">
-              <section className="analytics-panel">
+              <section
+                className="
+                  analytics-panel
+                  ui-card
+                "
+              >
                 <div className="analytics-panel-header">
                   <div>
-                    <p className="analytics-eyebrow">
-                      EARNINGS
-                    </p>
+                    <span className="ui-page-eyebrow">
+                      Earnings
+                    </span>
 
                     <h2>
                       Earnings Trend
@@ -638,7 +724,10 @@ function Analytics() {
                           >
                             <div className="analytics-bars">
                               <div
-                                className="analytics-bar analytics-bar-gross"
+                                className="
+                                  analytics-bar
+                                  analytics-bar-gross
+                                "
                                 style={{
                                   height:
                                     `${getChartHeight(
@@ -654,7 +743,10 @@ function Analytics() {
                               />
 
                               <div
-                                className="analytics-bar analytics-bar-net"
+                                className="
+                                  analytics-bar
+                                  analytics-bar-net
+                                "
                                 style={{
                                   height:
                                     `${getChartHeight(
@@ -684,12 +776,17 @@ function Analytics() {
               </section>
 
 
-              <section className="analytics-panel">
+              <section
+                className="
+                  analytics-panel
+                  ui-card
+                "
+              >
                 <div className="analytics-panel-header">
                   <div>
-                    <p className="analytics-eyebrow">
-                      DELIVERIES
-                    </p>
+                    <span className="ui-page-eyebrow">
+                      Deliveries
+                    </span>
 
                     <h2>
                       Orders Trend
@@ -715,9 +812,15 @@ function Analytics() {
                             }
                             className="analytics-chart-column"
                           >
-                            <div className="analytics-bars analytics-single-bars">
+                            <div className="
+                              analytics-bars
+                              analytics-single-bars
+                            ">
                               <div
-                                className="analytics-bar analytics-bar-orders"
+                                className="
+                                  analytics-bar
+                                  analytics-bar-orders
+                                "
                                 style={{
                                   height:
                                     `${getChartHeight(
@@ -746,12 +849,17 @@ function Analytics() {
             </div>
 
 
-            <section className="analytics-panel">
+            <section
+              className="
+                analytics-panel
+                ui-card
+              "
+            >
               <div className="analytics-panel-header">
                 <div>
-                  <p className="analytics-eyebrow">
-                    PLATFORM COMPARISON
-                  </p>
+                  <span className="ui-page-eyebrow">
+                    Platform Comparison
+                  </span>
 
                   <h2>
                     Performance by Platform
@@ -774,13 +882,20 @@ function Analytics() {
                     >
                       <div className="analytics-platform-heading">
                         <div>
-                          <strong>
+                          <span
+                            className={
+                              `ui-badge ` +
+                              `${getPlatformBadgeClass(
+                                item.platform,
+                              )}`
+                            }
+                          >
                             {formatPlatform(
                               item.platform,
                             )}
-                          </strong>
+                          </span>
 
-                          <span>
+                          <small>
                             {
                               item.total_sessions
                             }{' '}
@@ -790,14 +905,20 @@ function Analytics() {
                                 ? 'session'
                                 : 'sessions'
                             }
-                          </span>
+                          </small>
                         </div>
 
-                        <strong>
-                          {formatMoney(
-                            item.net_income,
-                          )}
-                        </strong>
+                        <div className="analytics-platform-net">
+                          <span>
+                            Net Earnings
+                          </span>
+
+                          <strong>
+                            {formatMoney(
+                              item.net_income,
+                            )}
+                          </strong>
+                        </div>
                       </div>
 
 
@@ -857,14 +978,12 @@ function Analytics() {
                           </span>
 
                           <strong>
-                            {
-                              item.income_per_hour ===
-                              null
-                                ? '-'
-                                : formatMoney(
-                                    item.income_per_hour,
-                                  )
-                            }
+                            {item.income_per_hour ===
+                            null
+                              ? '-'
+                              : formatMoney(
+                                  item.income_per_hour,
+                                )}
                           </strong>
                         </div>
 
@@ -874,14 +993,12 @@ function Analytics() {
                           </span>
 
                           <strong>
-                            {
-                              item.income_per_order ===
-                              null
-                                ? '-'
-                                : formatMoney(
-                                    item.income_per_order,
-                                  )
-                            }
+                            {item.income_per_order ===
+                            null
+                              ? '-'
+                              : formatMoney(
+                                  item.income_per_order,
+                                )}
                           </strong>
                         </div>
 
@@ -891,14 +1008,12 @@ function Analytics() {
                           </span>
 
                           <strong>
-                            {
-                              item.income_per_km ===
-                              null
-                                ? '-'
-                                : formatMoney(
-                                    item.income_per_km,
-                                  )
-                            }
+                            {item.income_per_km ===
+                            null
+                              ? '-'
+                              : formatMoney(
+                                  item.income_per_km,
+                                )}
                           </strong>
                         </div>
 
@@ -922,12 +1037,17 @@ function Analytics() {
 
 
             <div className="analytics-lower-grid">
-              <section className="analytics-panel">
+              <section
+                className="
+                  analytics-panel
+                  ui-card
+                "
+              >
                 <div className="analytics-panel-header">
                   <div>
-                    <p className="analytics-eyebrow">
-                      WEEKLY PATTERN
-                    </p>
+                    <span className="ui-page-eyebrow">
+                      Weekly Pattern
+                    </span>
 
                     <h2>
                       Day of Week
@@ -995,14 +1115,12 @@ function Analytics() {
                           </span>
 
                           <strong>
-                            {
-                              item.income_per_hour ===
-                              null
-                                ? '-'
-                                : formatMoney(
-                                    item.income_per_hour,
-                                  )
-                            }
+                            {item.income_per_hour ===
+                            null
+                              ? '-'
+                              : formatMoney(
+                                  item.income_per_hour,
+                                )}
                           </strong>
                         </div>
                       </div>
@@ -1012,12 +1130,17 @@ function Analytics() {
               </section>
 
 
-              <section className="analytics-panel">
+              <section
+                className="
+                  analytics-panel
+                  ui-card
+                "
+              >
                 <div className="analytics-panel-header">
                   <div>
-                    <p className="analytics-eyebrow">
-                      COST BREAKDOWN
-                    </p>
+                    <span className="ui-page-eyebrow">
+                      Cost Breakdown
+                    </span>
 
                     <h2>
                       Expenses
@@ -1044,7 +1167,7 @@ function Analytics() {
                       Fuel Cost
                     </span>
 
-                    <strong>
+                    <strong className="analytics-expense-negative">
                       -
                       {formatMoney(
                         summary.fuel_cost,
@@ -1057,7 +1180,7 @@ function Analytics() {
                       Other Expenses
                     </span>
 
-                    <strong>
+                    <strong className="analytics-expense-negative">
                       -
                       {formatMoney(
                         summary.other_expenses,
@@ -1093,12 +1216,17 @@ function Analytics() {
             </div>
 
 
-            <section className="analytics-panel">
+            <section
+              className="
+                analytics-panel
+                ui-card
+              "
+            >
               <div className="analytics-panel-header">
                 <div>
-                  <p className="analytics-eyebrow">
-                    PERFORMANCE HIGHLIGHTS
-                  </p>
+                  <span className="ui-page-eyebrow">
+                    Performance Highlights
+                  </span>
 
                   <h2>
                     Best Performance
@@ -1108,134 +1236,118 @@ function Analytics() {
 
 
               <div className="analytics-highlight-grid">
-                <article>
+                <article className="ui-card">
                   <span>
                     Best Earning Day
                   </span>
 
                   <strong>
-                    {
-                      highlights
-                        ?.best_earning_day
-                        ? formatMoney(
-                            highlights
-                              .best_earning_day
-                              .value,
-                          )
-                        : '-'
-                    }
+                    {highlights
+                      ?.best_earning_day
+                      ? formatMoney(
+                          highlights
+                            .best_earning_day
+                            .value,
+                        )
+                      : '-'}
                   </strong>
 
                   <small>
-                    {
-                      highlights
-                        ?.best_earning_day
-                        ? formatDate(
-                            highlights
-                              .best_earning_day
-                              .date,
-                          )
-                        : 'No data'
-                    }
+                    {highlights
+                      ?.best_earning_day
+                      ? formatDate(
+                          highlights
+                            .best_earning_day
+                            .date,
+                        )
+                      : 'No data'}
                   </small>
                 </article>
 
 
-                <article>
+                <article className="ui-card">
                   <span>
                     Best RM / Hour Day
                   </span>
 
                   <strong>
-                    {
-                      highlights
-                        ?.best_efficiency_day
-                        ? formatMoney(
-                            highlights
-                              .best_efficiency_day
-                              .value,
-                          )
-                        : '-'
-                    }
+                    {highlights
+                      ?.best_efficiency_day
+                      ? formatMoney(
+                          highlights
+                            .best_efficiency_day
+                            .value,
+                        )
+                      : '-'}
                   </strong>
 
                   <small>
-                    {
-                      highlights
-                        ?.best_efficiency_day
-                        ? formatDate(
-                            highlights
-                              .best_efficiency_day
-                              .date,
-                          )
-                        : 'Minimum 1 riding hour'
-                    }
+                    {highlights
+                      ?.best_efficiency_day
+                      ? formatDate(
+                          highlights
+                            .best_efficiency_day
+                            .date,
+                        )
+                      : 'Minimum 1 riding hour'}
                   </small>
                 </article>
 
 
-                <article>
+                <article className="ui-card">
                   <span>
                     Highest Net Platform
                   </span>
 
                   <strong>
-                    {
-                      highlights
-                        ?.best_platform_net
-                        ? formatPlatform(
-                            highlights
-                              .best_platform_net
-                              .platform,
-                          )
-                        : '-'
-                    }
+                    {highlights
+                      ?.best_platform_net
+                      ? formatPlatform(
+                          highlights
+                            .best_platform_net
+                            .platform,
+                        )
+                      : '-'}
                   </strong>
 
                   <small>
-                    {
-                      highlights
-                        ?.best_platform_net
-                        ? formatMoney(
-                            highlights
-                              .best_platform_net
-                              .value,
-                          )
-                        : 'No data'
-                    }
+                    {highlights
+                      ?.best_platform_net
+                      ? formatMoney(
+                          highlights
+                            .best_platform_net
+                            .value,
+                        )
+                      : 'No data'}
                   </small>
                 </article>
 
 
-                <article>
+                <article className="ui-card">
                   <span>
                     Most Efficient Platform
                   </span>
 
                   <strong>
-                    {
-                      highlights
-                        ?.best_platform_efficiency
-                        ? formatPlatform(
-                            highlights
-                              .best_platform_efficiency
-                              .platform,
-                          )
-                        : '-'
-                    }
+                    {highlights
+                      ?.best_platform_efficiency
+                      ? formatPlatform(
+                          highlights
+                            .best_platform_efficiency
+                            .platform,
+                        )
+                      : '-'}
                   </strong>
 
                   <small>
-                    {
-                      highlights
-                        ?.best_platform_efficiency
-                        ? `${formatMoney(
-                            highlights
-                              .best_platform_efficiency
-                              .value,
-                          )} / hour`
-                        : 'No data'
-                    }
+                    {highlights
+                      ?.best_platform_efficiency
+                      ? `${formatMoney(
+                          highlights
+                            .best_platform_efficiency
+                            .value,
+                        )} / hour`
+                      : 'No data'}
                   </small>
                 </article>
               </div>
