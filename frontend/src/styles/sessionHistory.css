@@ -2,11 +2,6 @@
    RiderJob Session History
    ========================================= */
 
-
-/* =========================================
-   Page
-   ========================================= */
-
 .history-page {
   display: flex;
   flex-direction: column;
@@ -17,9 +12,7 @@
 }
 
 
-/* =========================================
-   Filters
-   ========================================= */
+/* Filters */
 
 .history-filters {
   padding: var(--space-xl);
@@ -30,7 +23,7 @@
   align-items: flex-start;
   justify-content: space-between;
 
-  gap: var(--space-lg);
+  gap: var(--space-xl);
 
   margin-bottom: var(--space-xl);
 }
@@ -41,6 +34,19 @@
   color: var(--color-text);
 
   font-size: var(--font-size-xl);
+}
+
+.history-filter-header p {
+  margin:
+    var(--space-sm)
+    0
+    0;
+
+  color:
+    var(--color-text-muted);
+
+  font-size:
+    var(--font-size-sm);
 }
 
 .history-result-count {
@@ -87,15 +93,30 @@
 
 .history-filter-actions {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: var(--space-md);
 
   margin-top: var(--space-lg);
+
+  padding-top: var(--space-lg);
+
+  border-top:
+    1px solid
+    var(--color-border);
+}
+
+.history-filter-actions > span {
+  color:
+    var(--color-text-muted);
+
+  font-size:
+    var(--font-size-xs);
 }
 
 
-/* =========================================
-   Date Input
-   ========================================= */
+/* Date Input */
 
 .history-date-input {
   color-scheme: dark;
@@ -118,12 +139,54 @@
 }
 
 
-/* =========================================
-   Table Card
-   ========================================= */
+/* Table Card */
 
 .history-table-card {
   overflow: hidden;
+}
+
+.history-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: var(--space-lg);
+
+  padding:
+    var(--space-lg)
+    var(--space-xl);
+
+  border-bottom:
+    1px solid
+    var(--color-border);
+
+  background:
+    rgba(255, 255, 255, 0.012);
+}
+
+.history-table-header > div {
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.history-table-header span {
+  color:
+    var(--color-text-soft);
+
+  font-size:
+    var(--font-size-sm);
+
+  font-weight: 700;
+}
+
+.history-table-header small {
+  color:
+    var(--color-text-muted);
+
+  font-size:
+    var(--font-size-xs);
 }
 
 .history-table-wrapper {
@@ -135,7 +198,7 @@
 .history-table {
   width: 100%;
 
-  min-width: 850px;
+  min-width: 900px;
 
   border-collapse: collapse;
 }
@@ -157,7 +220,7 @@
 
 .history-table th {
   background:
-    rgba(255, 255, 255, 0.018);
+    rgba(255, 255, 255, 0.016);
 
   color:
     var(--color-text-muted);
@@ -167,7 +230,7 @@
 
   font-weight: 700;
 
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
 
   text-transform: uppercase;
 
@@ -197,10 +260,28 @@
   border-bottom: 0;
 }
 
+.history-date-cell,
+.history-money-cell {
+  color:
+    var(--color-text) !important;
 
-/* =========================================
-   Screen Reader Only
-   ========================================= */
+  font-weight: 600;
+}
+
+.history-time-cell,
+.history-muted-cell {
+  color:
+    var(--color-text-secondary) !important;
+}
+
+.history-action-cell {
+  width: 1%;
+
+  white-space: nowrap;
+}
+
+
+/* Screen Reader Only */
 
 .sr-only {
   position: absolute;
@@ -221,9 +302,7 @@
 }
 
 
-/* =========================================
-   Tablet
-   ========================================= */
+/* Tablet */
 
 @media (max-width: 1000px) {
   .history-filter-grid {
@@ -236,9 +315,7 @@
 }
 
 
-/* =========================================
-   Mobile
-   ========================================= */
+/* Mobile */
 
 @media (max-width: 700px) {
   .history-filters {
@@ -264,12 +341,18 @@
   }
 
   .history-filter-actions {
-    justify-content: stretch;
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .history-filter-actions
   .ui-button {
     width: 100%;
+  }
+
+  .history-table-header {
+    padding:
+      var(--space-lg);
   }
 
   .history-table th,

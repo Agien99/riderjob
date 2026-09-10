@@ -505,7 +505,7 @@ function SessionDetail() {
   return (
     <main className="detail-page">
       <div className="detail-header">
-        <div>
+        <div className="detail-header-content">
           <button
             type="button"
             className="
@@ -532,11 +532,22 @@ function SessionDetail() {
             Session
           </h1>
 
-          <p className="ui-page-subtitle">
-            {formatDate(
-              session.session_date,
-            )}
-          </p>
+          <div className="detail-header-meta">
+            <span>
+              {formatDate(
+                session.session_date,
+              )}
+            </span>
+
+            <span
+              className="
+                ui-badge
+                ui-badge-success
+              "
+            >
+              Completed
+            </span>
+          </div>
         </div>
 
         <div className="detail-header-actions">
@@ -623,6 +634,11 @@ function SessionDetail() {
                 <h2>
                   Session Information
                 </h2>
+
+                <p>
+                  Update the original
+                  session values below.
+                </p>
               </div>
             </div>
 
@@ -968,6 +984,10 @@ function SessionDetail() {
                   metrics.net_income,
                 )}
               </strong>
+
+              <small>
+                After all expenses
+              </small>
             </article>
 
             <article
@@ -986,6 +1006,10 @@ function SessionDetail() {
                   ' km',
                 )}
               </strong>
+
+              <small>
+                Total ride distance
+              </small>
             </article>
 
             <article
@@ -1003,6 +1027,10 @@ function SessionDetail() {
                   metrics.duration_minutes,
                 )}
               </strong>
+
+              <small>
+                Session duration
+              </small>
             </article>
 
             <article
@@ -1018,75 +1046,153 @@ function SessionDetail() {
               <strong>
                 {session.total_orders}
               </strong>
+
+              <small>
+                Completed deliveries
+              </small>
             </article>
           </section>
 
 
-          <section
-            className="
-              detail-section
-              ui-card
-            "
-          >
-            <div className="detail-section-header">
-              <div>
-                <span className="ui-page-eyebrow">
-                  Performance
-                </span>
+          <div className="detail-report-grid">
+            <section
+              className="
+                detail-section
+                ui-card
+              "
+            >
+              <div className="detail-section-header">
+                <div>
+                  <span className="ui-page-eyebrow">
+                    Performance
+                  </span>
 
-                <h2>
-                  Earnings Efficiency
-                </h2>
-              </div>
-            </div>
-
-            <div className="detail-info-grid">
-              <div className="detail-info-item">
-                <span>
-                  Income / Hour
-                </span>
-
-                <strong>
-                  {metrics.income_per_hour
-                    === null
-                    ? '-'
-                    : formatMoney(
-                        metrics.income_per_hour,
-                      )}
-                </strong>
+                  <h2>
+                    Earnings Efficiency
+                  </h2>
+                </div>
               </div>
 
-              <div className="detail-info-item">
-                <span>
-                  Income / Order
-                </span>
+              <div className="detail-info-grid detail-info-grid-3">
+                <div className="detail-info-item">
+                  <span>
+                    Income / Hour
+                  </span>
 
-                <strong>
-                  {metrics.income_per_order
-                    === null
-                    ? '-'
-                    : formatMoney(
-                        metrics.income_per_order,
-                      )}
-                </strong>
+                  <strong>
+                    {metrics.income_per_hour
+                      === null
+                      ? '-'
+                      : formatMoney(
+                          metrics.income_per_hour,
+                        )}
+                  </strong>
+                </div>
+
+                <div className="detail-info-item">
+                  <span>
+                    Income / Order
+                  </span>
+
+                  <strong>
+                    {metrics.income_per_order
+                      === null
+                      ? '-'
+                      : formatMoney(
+                          metrics.income_per_order,
+                        )}
+                  </strong>
+                </div>
+
+                <div className="detail-info-item">
+                  <span>
+                    Income / KM
+                  </span>
+
+                  <strong>
+                    {metrics.income_per_km
+                      === null
+                      ? '-'
+                      : formatMoney(
+                          metrics.income_per_km,
+                        )}
+                  </strong>
+                </div>
+              </div>
+            </section>
+
+
+            <section
+              className="
+                detail-section
+                ui-card
+              "
+            >
+              <div className="detail-section-header">
+                <div>
+                  <span className="ui-page-eyebrow">
+                    Financial
+                  </span>
+
+                  <h2>
+                    Earnings & Expenses
+                  </h2>
+                </div>
               </div>
 
-              <div className="detail-info-item">
-                <span>
-                  Income / KM
-                </span>
+              <div className="detail-financial-list">
+                <div>
+                  <span>
+                    Gross Income
+                  </span>
 
-                <strong>
-                  {metrics.income_per_km
-                    === null
-                    ? '-'
-                    : formatMoney(
-                        metrics.income_per_km,
-                      )}
-                </strong>
+                  <strong>
+                    {formatMoney(
+                      session.gross_income,
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Fuel Cost
+                  </span>
+
+                  <strong className="detail-negative">
+                    -
+                    {formatMoney(
+                      session.fuel_cost,
+                    )}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Other Expenses
+                  </span>
+
+                  <strong className="detail-negative">
+                    -
+                    {formatMoney(
+                      session.other_expenses,
+                    )}
+                  </strong>
+                </div>
+
+                <div className="detail-financial-net">
+                  <span>
+                    Net Income
+                  </span>
+
+                  <strong>
+                    {formatMoney(
+                      metrics.net_income,
+                    )}
+                  </strong>
+                </div>
               </div>
-            </div>
-          </section>
+            </section>
+          </div>
 
 
           <section
@@ -1105,15 +1211,6 @@ function SessionDetail() {
                   Session Details
                 </h2>
               </div>
-
-              <span
-                className="
-                  ui-badge
-                  ui-badge-success
-                "
-              >
-                Completed
-              </span>
             </div>
 
             <div className="detail-info-grid">
@@ -1163,76 +1260,6 @@ function SessionDetail() {
                   {formatNumber(
                     session.end_mileage,
                     ' km',
-                  )}
-                </strong>
-              </div>
-            </div>
-          </section>
-
-
-          <section
-            className="
-              detail-section
-              ui-card
-            "
-          >
-            <div className="detail-section-header">
-              <div>
-                <span className="ui-page-eyebrow">
-                  Financial
-                </span>
-
-                <h2>
-                  Earnings & Expenses
-                </h2>
-              </div>
-            </div>
-
-            <div className="detail-info-grid">
-              <div className="detail-info-item">
-                <span>
-                  Gross Income
-                </span>
-
-                <strong>
-                  {formatMoney(
-                    session.gross_income,
-                  )}
-                </strong>
-              </div>
-
-              <div className="detail-info-item">
-                <span>
-                  Fuel Cost
-                </span>
-
-                <strong>
-                  {formatMoney(
-                    session.fuel_cost,
-                  )}
-                </strong>
-              </div>
-
-              <div className="detail-info-item">
-                <span>
-                  Other Expenses
-                </span>
-
-                <strong>
-                  {formatMoney(
-                    session.other_expenses,
-                  )}
-                </strong>
-              </div>
-
-              <div className="detail-info-item">
-                <span>
-                  Net Income
-                </span>
-
-                <strong>
-                  {formatMoney(
-                    metrics.net_income,
                   )}
                 </strong>
               </div>

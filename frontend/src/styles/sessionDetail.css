@@ -2,11 +2,6 @@
    RiderJob Session Detail
    ========================================= */
 
-
-/* =========================================
-   Page
-   ========================================= */
-
 .detail-page {
   display: flex;
   flex-direction: column;
@@ -17,9 +12,7 @@
 }
 
 
-/* =========================================
-   Header
-   ========================================= */
+/* Header */
 
 .detail-header {
   display: flex;
@@ -29,26 +22,46 @@
   gap: var(--space-xl);
 }
 
+.detail-header-content {
+  min-width: 0;
+}
+
 .detail-header
 .detail-back-button {
   margin-bottom:
     var(--space-lg);
 }
 
+.detail-header-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: var(--space-md);
+
+  margin-top:
+    var(--space-md);
+}
+
+.detail-header-meta > span:first-child {
+  color:
+    var(--color-text-secondary);
+
+  font-size:
+    var(--font-size-sm);
+}
+
 .detail-header-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  flex-wrap: wrap;
 
   gap: var(--space-md);
-
-  flex-wrap: wrap;
 }
 
 
-/* =========================================
-   Metrics
-   ========================================= */
+/* Metrics */
 
 .detail-metrics-grid {
   display: grid;
@@ -65,7 +78,11 @@
 .detail-metric-card {
   position: relative;
 
+  display: flex;
+  flex-direction: column;
+
   min-width: 0;
+  min-height: 124px;
 
   padding: var(--space-xl);
 
@@ -100,14 +117,34 @@
   overflow-wrap: anywhere;
 }
 
+.detail-metric-card small {
+  display: block;
+
+  margin-top: auto;
+
+  padding-top:
+    var(--space-md);
+
+  color:
+    var(--color-text-muted);
+
+  font-size:
+    var(--font-size-xs);
+}
+
 .detail-metric-primary {
   border-color:
     var(--color-primary-border);
 
   background:
+    radial-gradient(
+      circle at 90% 20%,
+      rgba(59, 130, 246, 0.14),
+      transparent 36%
+    ),
     linear-gradient(
       145deg,
-      rgba(59, 130, 246, 0.13),
+      rgba(59, 130, 246, 0.12),
       var(--color-surface-elevated)
     );
 }
@@ -128,9 +165,22 @@
 }
 
 
-/* =========================================
-   Sections
-   ========================================= */
+/* Report Layout */
+
+.detail-report-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.15fr)
+    minmax(0, 0.85fr);
+
+  gap: var(--space-lg);
+
+  align-items: start;
+}
+
+
+/* Sections */
 
 .detail-section {
   padding: var(--space-xl);
@@ -156,10 +206,21 @@
     var(--font-size-xl);
 }
 
+.detail-section-header p {
+  margin:
+    var(--space-sm)
+    0
+    0;
 
-/* =========================================
-   Information Grid
-   ========================================= */
+  color:
+    var(--color-text-muted);
+
+  font-size:
+    var(--font-size-sm);
+}
+
+
+/* Information Grid */
 
 .detail-info-grid {
   display: grid;
@@ -171,6 +232,14 @@
     );
 
   gap: var(--space-md);
+}
+
+.detail-info-grid-3 {
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
 }
 
 .detail-info-item {
@@ -188,13 +257,26 @@
 
   background:
     var(--color-surface-tertiary);
+
+  transition:
+    border-color
+      var(--transition-fast),
+    background
+      var(--transition-fast);
+}
+
+.detail-info-item:hover {
+  border-color:
+    var(--color-border-strong);
+
+  background:
+    var(--color-surface-secondary);
 }
 
 .detail-info-item span {
   display: block;
 
-  margin-bottom:
-    7px;
+  margin-bottom: 7px;
 
   color:
     var(--color-text-muted);
@@ -218,9 +300,77 @@
 }
 
 
-/* =========================================
-   Notes
-   ========================================= */
+/* Financial */
+
+.detail-financial-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-financial-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: var(--space-lg);
+
+  padding:
+    13px
+    0;
+
+  border-bottom:
+    1px solid
+    var(--color-border);
+}
+
+.detail-financial-list > div:first-child {
+  padding-top: 0;
+}
+
+.detail-financial-list span {
+  color:
+    var(--color-text-secondary);
+
+  font-size:
+    var(--font-size-sm);
+}
+
+.detail-financial-list strong {
+  color:
+    var(--color-text-soft);
+
+  font-size:
+    var(--font-size-sm);
+
+  text-align: right;
+}
+
+.detail-negative {
+  color:
+    #fca5a5 !important;
+}
+
+.detail-financial-net {
+  margin-top:
+    var(--space-sm);
+
+  padding-bottom:
+    0 !important;
+
+  border-bottom:
+    0 !important;
+}
+
+.detail-financial-net span,
+.detail-financial-net strong {
+  color:
+    #60a5fa;
+
+  font-weight: 700;
+}
+
+
+/* Notes */
 
 .detail-notes {
   min-height: 80px;
@@ -251,9 +401,7 @@
 }
 
 
-/* =========================================
-   Edit Form
-   ========================================= */
+/* Edit Form */
 
 .detail-edit-form {
   width: 100%;
@@ -298,9 +446,7 @@
 }
 
 
-/* =========================================
-   Tablet
-   ========================================= */
+/* Tablet */
 
 @media (max-width: 1100px) {
   .detail-metrics-grid,
@@ -311,12 +457,23 @@
         minmax(0, 1fr)
       );
   }
+
+  .detail-report-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+  .detail-info-grid-3 {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
 }
 
 
-/* =========================================
-   Mobile
-   ========================================= */
+/* Mobile */
 
 @media (max-width: 700px) {
   .detail-header {
@@ -347,6 +504,11 @@
       var(--space-lg);
   }
 
+  .detail-info-grid-3 {
+    grid-template-columns:
+      1fr;
+  }
+
   .detail-form-grid {
     grid-template-columns:
       1fr;
@@ -368,9 +530,7 @@
 }
 
 
-/* =========================================
-   Small Mobile
-   ========================================= */
+/* Small Mobile */
 
 @media (max-width: 480px) {
   .detail-metrics-grid,
@@ -396,5 +556,10 @@
   .detail-metric-card {
     padding:
       var(--space-lg);
+  }
+
+  .detail-header-meta {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

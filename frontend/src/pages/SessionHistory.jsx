@@ -272,8 +272,8 @@ function SessionHistory() {
           </h1>
 
           <p className="ui-page-subtitle">
-            Review your completed
-            rider sessions.
+            Review and manage your
+            completed rider sessions.
           </p>
         </div>
 
@@ -358,6 +358,12 @@ function SessionHistory() {
                   <h2>
                     Find a Session
                   </h2>
+
+                  <p>
+                    Narrow your history
+                    by platform, date or
+                    notes.
+                  </p>
                 </div>
 
                 <span className="history-result-count">
@@ -487,6 +493,10 @@ function SessionHistory() {
 
               {hasFilters && (
                 <div className="history-filter-actions">
+                  <span>
+                    Filters applied
+                  </span>
+
                   <button
                     type="button"
                     className="
@@ -538,6 +548,20 @@ function SessionHistory() {
                   ui-card
                 "
               >
+                <div className="history-table-header">
+                  <div>
+                    <span>
+                      Completed Sessions
+                    </span>
+
+                    <small>
+                      Select a session
+                      to review its full
+                      report.
+                    </small>
+                  </div>
+                </div>
+
                 <div className="history-table-wrapper">
                   <table className="history-table">
                     <thead>
@@ -565,7 +589,7 @@ function SessionHistory() {
                               session.id
                             }
                           >
-                            <td>
+                            <td className="history-date-cell">
                               {formatDate(
                                 session
                                   .session_date,
@@ -587,7 +611,7 @@ function SessionHistory() {
                               </span>
                             </td>
 
-                            <td>
+                            <td className="history-time-cell">
                               {formatTime(
                                 session
                                   .start_time,
@@ -606,14 +630,14 @@ function SessionHistory() {
                               }
                             </td>
 
-                            <td>
+                            <td className="history-money-cell">
                               {formatMoney(
                                 session
                                   .gross_income,
                               )}
                             </td>
 
-                            <td>
+                            <td className="history-muted-cell">
                               {formatMoney(
                                 session
                                   .fuel_cost,
@@ -631,7 +655,7 @@ function SessionHistory() {
                               </span>
                             </td>
 
-                            <td>
+                            <td className="history-action-cell">
                               <button
                                 type="button"
                                 className="
