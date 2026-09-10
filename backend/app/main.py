@@ -13,6 +13,9 @@ from app.api.routers.dashboard import (
 from app.api.routers.sessions import (
     router as sessions_router,
 )
+from app.api.routers.analytics import (
+    router as analytics_router,
+)
 from app.config import settings
 
 
@@ -47,6 +50,10 @@ app.include_router(
 
 app.include_router(
     dashboard_router
+)
+
+app.include_router(
+    analytics_router
 )
 
 
