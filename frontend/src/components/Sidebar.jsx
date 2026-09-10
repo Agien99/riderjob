@@ -33,7 +33,7 @@ function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-brand">
         <img
-          src={`${import.meta.env.BASE_URL}main-logo.png`}
+          src={`${import.meta.env.BASE_URL}main-logo-icon.png`}
           alt="RiderJob"
           className="sidebar-brand-logo"
         />
