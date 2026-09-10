@@ -1,12 +1,17 @@
 import { useState } from 'react'
+
 import {
   Link,
   Navigate,
   useNavigate,
 } from 'react-router-dom'
 
-import { useAuth } from '../context/useAuth'
+import {
+  useAuth,
+} from '../context/useAuth'
+
 import '../styles/auth.css'
+
 
 function Register() {
   const navigate = useNavigate()
@@ -16,8 +21,10 @@ function Register() {
     isAuthenticated,
   } = useAuth()
 
-  const [displayName, setDisplayName] =
-    useState('')
+  const [
+    displayName,
+    setDisplayName,
+  ] = useState('')
 
   const [email, setEmail] =
     useState('')
@@ -28,8 +35,11 @@ function Register() {
   const [error, setError] =
     useState('')
 
-  const [submitting, setSubmitting] =
-    useState(false)
+  const [
+    submitting,
+    setSubmitting,
+  ] = useState(false)
+
 
   if (isAuthenticated) {
     return (
@@ -40,13 +50,15 @@ function Register() {
     )
   }
 
+
   async function handleSubmit(event) {
     event.preventDefault()
 
     setError('')
-    setSubmitting(true)
 
     try {
+      setSubmitting(true)
+
       await register(
         email,
         password,
@@ -60,122 +72,176 @@ function Register() {
         },
       )
     } catch (err) {
-      setError(err.message)
+      setError(
+        err.message ||
+          'Unable to create account.',
+      )
     } finally {
       setSubmitting(false)
     }
   }
 
+
   return (
-    <div className="auth-page">
-      <div className="auth-panel">
-        <div className="auth-brand">
-          <div className="auth-logo">
-            RJ
+    <main className="auth-page">
+      <section className="auth-panel">
+        <div className="auth-panel-content">
+          <div className="auth-brand">
+            <img
+              src={`${import.meta.env.BASE_URL}main-logo-icon.png`}
+              alt="RiderJob"
+              className="auth-brand-logo"
+            />
           </div>
 
-          <div>
-            <h1>RiderJob</h1>
+          <div className="auth-heading">
+            <span className="ui-page-eyebrow">
+              Create Profile
+            </span>
+
+            <h1>
+              Start tracking.
+            </h1>
+
             <p>
-              Ride. Track. Improve.
+              Create your RiderJob
+              account and turn your
+              rider sessions into
+              measurable performance.
             </p>
           </div>
-        </div>
 
-        <div className="auth-heading">
-          <span>CREATE PROFILE</span>
+          <form
+            className="auth-form"
+            onSubmit={handleSubmit}
+          >
+            {error && (
+              <div
+                className="
+                  ui-alert
+                  ui-alert-error
+                "
+                role="alert"
+              >
+                {error}
+              </div>
+            )}
 
-          <h2>Start tracking.</h2>
+            <div className="ui-field">
+              <label
+                className="ui-field-label"
+                htmlFor="registerName"
+              >
+                Display Name
+              </label>
 
-          <p>
-            Create your RiderJob account
-            and turn your rider sessions
-            into measurable performance.
+              <input
+                className="ui-input"
+                id="registerName"
+                type="text"
+                value={displayName}
+                onChange={(event) =>
+                  setDisplayName(
+                    event.target.value,
+                  )
+                }
+                placeholder="Your name"
+                autoComplete="name"
+                minLength="2"
+                maxLength="120"
+                disabled={submitting}
+                required
+              />
+            </div>
+
+            <div className="ui-field">
+              <label
+                className="ui-field-label"
+                htmlFor="registerEmail"
+              >
+                Email
+              </label>
+
+              <input
+                className="ui-input"
+                id="registerEmail"
+                type="email"
+                value={email}
+                onChange={(event) =>
+                  setEmail(
+                    event.target.value,
+                  )
+                }
+                placeholder="you@example.com"
+                autoComplete="email"
+                disabled={submitting}
+                required
+              />
+            </div>
+
+            <div className="ui-field">
+              <label
+                className="ui-field-label"
+                htmlFor="registerPassword"
+              >
+                Password
+              </label>
+
+              <input
+                className="ui-input"
+                id="registerPassword"
+                type="password"
+                value={password}
+                onChange={(event) =>
+                  setPassword(
+                    event.target.value,
+                  )
+                }
+                placeholder="Minimum 8 characters"
+                autoComplete="new-password"
+                minLength="8"
+                maxLength="128"
+                disabled={submitting}
+                required
+              />
+
+              <span className="ui-field-hint">
+                Use at least 8 characters.
+              </span>
+            </div>
+
+            <button
+              className="
+                ui-button
+                ui-button-primary
+                ui-button-block
+              "
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting
+                ? 'Creating account...'
+                : 'Create Account'}
+            </button>
+          </form>
+
+          <p className="auth-switch">
+            Already registered?{' '}
+
+            <Link to="/login">
+              Sign in
+            </Link>
           </p>
         </div>
+      </section>
 
-        <form
-          className="auth-form"
-          onSubmit={handleSubmit}
-        >
-          {error && (
-            <div className="auth-error">
-              {error}
-            </div>
-          )}
-
-          <label>
-            Display Name
-            <input
-              type="text"
-              value={displayName}
-              onChange={(event) =>
-                setDisplayName(
-                  event.target.value,
-                )
-              }
-              placeholder="Your name"
-              minLength="2"
-              maxLength="120"
-              required
-            />
-          </label>
-
-          <label>
-            Email
-            <input
-              type="email"
-              value={email}
-              onChange={(event) =>
-                setEmail(
-                  event.target.value,
-                )
-              }
-              placeholder="you@example.com"
-              required
-            />
-          </label>
-
-          <label>
-            Password
-            <input
-              type="password"
-              value={password}
-              onChange={(event) =>
-                setPassword(
-                  event.target.value,
-                )
-              }
-              placeholder="Minimum 8 characters"
-              minLength="8"
-              maxLength="128"
-              required
-            />
-          </label>
-
-          <button
-            className="auth-submit"
-            type="submit"
-            disabled={submitting}
-          >
-            {submitting
-              ? 'Creating account...'
-              : 'Create Account'}
-          </button>
-        </form>
-
-        <p className="auth-switch">
-          Already registered?{' '}
-          <Link to="/login">
-            Sign in
-          </Link>
-        </p>
-      </div>
-
-      <div className="auth-visual">
-        <div>
+      <aside
+        className="auth-visual"
+        aria-label="RiderJob introduction"
+      >
+        <div className="auth-visual-content">
           <span className="auth-visual-label">
-            BUILT FOR RIDERS
+            Built for Riders
           </span>
 
           <h2>
@@ -188,10 +254,25 @@ function Register() {
             ShopeeFood, GrabFood and
             Lalamove.
           </p>
+
+          <div className="auth-platforms">
+            <span className="auth-platform auth-platform-shopee">
+              ShopeeFood
+            </span>
+
+            <span className="auth-platform auth-platform-grab">
+              GrabFood
+            </span>
+
+            <span className="auth-platform auth-platform-lalamove">
+              Lalamove
+            </span>
+          </div>
         </div>
-      </div>
-    </div>
+      </aside>
+    </main>
   )
 }
+
 
 export default Register
