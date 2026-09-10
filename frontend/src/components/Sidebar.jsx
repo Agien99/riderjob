@@ -1,30 +1,33 @@
 import { NavLink } from 'react-router-dom'
 
+import NavigationIcon
+  from './NavigationIcon'
+
 const navigation = [
   {
     label: 'Dashboard',
     path: '/dashboard',
-    icon: '⌂',
+    icon: 'dashboard',
   },
   {
     label: 'Start Ride',
     path: '/session/start',
-    icon: '▶',
+    icon: 'ride',
   },
   {
     label: 'Sessions',
     path: '/sessions',
-    icon: '☰',
+    icon: 'sessions',
   },
   {
     label: 'Analytics',
     path: '/analytics',
-    icon: '◫',
+    icon: 'analytics',
   },
   {
     label: 'Profile',
     path: '/profile',
-    icon: '○',
+    icon: 'profile',
   },
 ]
 
@@ -39,19 +42,29 @@ function Sidebar() {
         />
       </div>
 
-      <nav className="sidebar-navigation">
+      <nav
+        className="sidebar-navigation"
+        aria-label="Main navigation"
+      >
         {navigation.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
               `sidebar-link ${
-                isActive ? 'sidebar-link-active' : ''
+                isActive
+                  ? 'sidebar-link-active'
+                  : ''
               }`
             }
           >
-            <span className="sidebar-link-icon">
-              {item.icon}
+            <span
+              className="sidebar-link-icon"
+              aria-hidden="true"
+            >
+              <NavigationIcon
+                name={item.icon}
+              />
             </span>
 
             <span>{item.label}</span>
@@ -61,6 +74,7 @@ function Sidebar() {
 
       <div className="sidebar-footer">
         <span>RiderJob</span>
+
         <small>
           Built by a Developer, for Real Life.
         </small>

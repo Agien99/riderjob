@@ -3,52 +3,74 @@ import {
   useRef,
   useState,
 } from 'react'
+
 import {
   useLocation,
   useNavigate,
 } from 'react-router-dom'
 
-import { useAuth } from '../context/useAuth'
+import { useAuth }
+  from '../context/useAuth'
+
+import NavigationIcon
+  from './NavigationIcon'
 
 const pageTitles = {
   '/dashboard': {
     title: 'Dashboard',
-    description: 'Your rider performance at a glance.',
+    description:
+      'Your rider performance at a glance.',
   },
+
   '/session/start': {
     title: 'Start Ride',
-    description: 'Start a new rider session.',
+    description:
+      'Start a new rider session.',
   },
+
   '/session/active': {
     title: 'Active Session',
-    description: 'Track your current rider session.',
+    description:
+      'Track your current rider session.',
   },
+
   '/sessions': {
     title: 'Session History',
-    description: 'Review your previous rider sessions.',
+    description:
+      'Review your previous rider sessions.',
   },
+
   '/analytics': {
     title: 'Analytics',
-    description: 'Understand your rider performance.',
+    description:
+      'Understand your rider performance.',
   },
+
   '/profile': {
     title: 'Profile',
-    description: 'Manage your RiderJob account.',
+    description:
+      'Manage your RiderJob account.',
   },
 }
 
 function getPageInformation(pathname) {
-  if (pathname.startsWith('/sessions/')) {
+  if (
+    pathname.startsWith(
+      '/sessions/',
+    )
+  ) {
     return {
       title: 'Session Detail',
-      description: 'Review rider session information.',
+      description:
+        'Review rider session information.',
     }
   }
 
   return (
     pageTitles[pathname] || {
       title: 'RiderJob',
-      description: 'Ride. Track. Improve.',
+      description:
+        'Ride. Track. Improve.',
     }
   )
 }
@@ -97,15 +119,31 @@ function AppHeader() {
       }
     }
 
+    function handleEscape(event) {
+      if (event.key === 'Escape') {
+        setMenuOpen(false)
+      }
+    }
+
     document.addEventListener(
       'mousedown',
       handleOutsideClick,
+    )
+
+    document.addEventListener(
+      'keydown',
+      handleEscape,
     )
 
     return () => {
       document.removeEventListener(
         'mousedown',
         handleOutsideClick,
+      )
+
+      document.removeEventListener(
+        'keydown',
+        handleEscape,
       )
     }
   }, [])
@@ -124,6 +162,7 @@ function AppHeader() {
 
   function handleProfile() {
     setMenuOpen(false)
+
     navigate('/profile')
   }
 
@@ -135,8 +174,15 @@ function AppHeader() {
       </div>
 
       <div className="app-header-actions">
-        <div className="app-header-status">
-          <span className="status-dot" />
+        <div
+          className="app-header-status"
+          aria-label="System online"
+        >
+          <span
+            className="status-dot"
+            aria-hidden="true"
+          />
+
           <span>System Online</span>
         </div>
 
@@ -148,6 +194,7 @@ function AppHeader() {
             className="profile-button"
             type="button"
             aria-label="Open account menu"
+            aria-haspopup="menu"
             aria-expanded={menuOpen}
             onClick={() =>
               setMenuOpen(
@@ -161,30 +208,48 @@ function AppHeader() {
           </button>
 
           {menuOpen && (
-            <div className="profile-dropdown">
-              <div className="profile-dropdown-user">
+            <div
+              className="profile-dropdown"
+              role="menu"
+            >
+              <div
+                className="profile-dropdown-user"
+              >
                 <strong>
-                  {user?.display_name}
+                  {user?.display_name ||
+                    'RiderJob User'}
                 </strong>
 
                 <span>
-                  {user?.email}
+                  {user?.email || ''}
                 </span>
               </div>
 
               <button
                 type="button"
+                role="menuitem"
                 onClick={handleProfile}
               >
-                Profile
+                <NavigationIcon
+                  name="profile"
+                  size={16}
+                />
+
+                <span>Profile</span>
               </button>
 
               <button
                 type="button"
+                role="menuitem"
                 className="profile-dropdown-logout"
                 onClick={handleLogout}
               >
-                Logout
+                <NavigationIcon
+                  name="logout"
+                  size={16}
+                />
+
+                <span>Logout</span>
               </button>
             </div>
           )}
