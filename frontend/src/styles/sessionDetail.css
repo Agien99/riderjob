@@ -171,6 +171,122 @@
   color: #fca5a5;
 }
 
+.detail-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.detail-edit-button,
+.detail-save-button,
+.detail-cancel-button {
+  border-radius: 9px;
+  padding: 9px 14px;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.detail-edit-button,
+.detail-save-button {
+  border: 1px solid #2563eb;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.detail-edit-button:hover,
+.detail-save-button:hover {
+  background: #1d4ed8;
+}
+
+.detail-cancel-button {
+  border: 1px solid #334155;
+  background: transparent;
+  color: #cbd5e1;
+}
+
+.detail-cancel-button:hover {
+  border-color: #64748b;
+  color: #ffffff;
+}
+
+.detail-save-button:disabled,
+.detail-cancel-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.detail-edit-form {
+  display: block;
+}
+
+.detail-form-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.detail-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-form-field span {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.detail-form-field input,
+.detail-form-field select,
+.detail-form-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #334155;
+  border-radius: 9px;
+  padding: 11px 12px;
+  outline: none;
+  background: #0b1220;
+  color: #e2e8f0;
+  font: inherit;
+}
+
+.detail-form-field input:focus,
+.detail-form-field select:focus,
+.detail-form-field textarea:focus {
+  border-color: #3b82f6;
+}
+
+.detail-form-field textarea {
+  resize: vertical;
+}
+
+.detail-form-notes {
+  grid-column: 1 / -1;
+}
+
+.detail-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.detail-edit-error {
+  margin-bottom: 18px;
+  border: 1px solid
+    rgba(239, 68, 68, 0.35);
+  border-radius: 9px;
+  padding: 12px 14px;
+  background:
+    rgba(239, 68, 68, 0.08);
+  color: #fca5a5;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 1100px) {
   .detail-metrics-grid,
   .detail-info-grid {
@@ -196,5 +312,27 @@
 
   .detail-section {
     padding: 17px;
+  }
+
+  .detail-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .detail-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-form-notes {
+    grid-column: auto;
+  }
+
+  .detail-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .detail-save-button,
+  .detail-cancel-button {
+    width: 100%;
   }
 }

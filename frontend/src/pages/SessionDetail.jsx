@@ -9,6 +9,7 @@ import {
 
 import {
   getSessionDetail,
+  updateRiderSession,
 } from '../services/sessionService'
 
 import '../styles/sessionDetail.css'
@@ -32,6 +33,35 @@ function SessionDetail() {
     error,
     setError,
   ] = useState('')
+
+  const [
+    isEditing,
+    setIsEditing,
+  ] = useState(false)
+
+  const [
+    saving,
+    setSaving,
+  ] = useState(false)
+
+  const [
+    editError,
+    setEditError,
+  ] = useState('')
+
+  const [
+    formData,
+    setFormData,
+  ] = useState({
+    platform: '',
+    start_mileage: '',
+    end_mileage: '',
+    total_orders: '',
+    gross_income: '',
+    fuel_cost: '',
+    other_expenses: '',
+    notes: '',
+  })
 
   useEffect(() => {
     async function loadSession() {
@@ -161,6 +191,162 @@ function SessionDetail() {
     )
   }
 
+  function startEditing() {
+    setFormData({
+      platform:
+        session.platform,
+      start_mileage:
+        session.start_mileage,
+      end_mileage:
+        session.end_mileage,
+      total_orders:
+        session.total_orders,
+      gross_income:
+        session.gross_income,
+      fuel_cost:
+        session.fuel_cost,
+      other_expenses:
+        session.other_expenses,
+      notes:
+        session.notes || '',
+    })
+
+    setEditError('')
+    setIsEditing(true)
+  }
+
+  function cancelEditing() {
+    setEditError('')
+    setIsEditing(false)
+  }
+
+  function handleChange(event) {
+    const {
+      name,
+      value,
+    } = event.target
+
+    setFormData(
+      (current) => ({
+        ...current,
+        [name]: value,
+      }),
+    )
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+
+    setEditError('')
+
+    const startMileage = Number(
+      formData.start_mileage,
+    )
+
+    const endMileage = Number(
+      formData.end_mileage,
+    )
+
+    const totalOrders = Number(
+      formData.total_orders,
+    )
+
+    const grossIncome = Number(
+      formData.gross_income,
+    )
+
+    const fuelCost = Number(
+      formData.fuel_cost,
+    )
+
+    const otherExpenses = Number(
+      formData.other_expenses,
+    )
+
+    if (
+      !Number.isFinite(startMileage) ||
+      startMileage < 0
+    ) {
+      setEditError(
+        'Enter a valid start mileage.',
+      )
+      return
+    }
+
+    if (
+      !Number.isFinite(endMileage) ||
+      endMileage < startMileage
+    ) {
+      setEditError(
+        'End mileage cannot be lower ' +
+          'than start mileage.',
+      )
+      return
+    }
+
+    if (
+      !Number.isInteger(totalOrders) ||
+      totalOrders < 0
+    ) {
+      setEditError(
+        'Enter a valid total order count.',
+      )
+      return
+    }
+
+    if (
+      !Number.isFinite(grossIncome) ||
+      grossIncome < 0 ||
+      !Number.isFinite(fuelCost) ||
+      fuelCost < 0 ||
+      !Number.isFinite(otherExpenses) ||
+      otherExpenses < 0
+    ) {
+      setEditError(
+        'Income and expenses cannot ' +
+          'be negative.',
+      )
+      return
+    }
+
+    try {
+      setSaving(true)
+
+      const updated =
+        await updateRiderSession(
+          id,
+          {
+            platform:
+              formData.platform,
+            start_mileage:
+              formData.start_mileage,
+            end_mileage:
+              formData.end_mileage,
+            total_orders:
+              totalOrders,
+            gross_income:
+              formData.gross_income,
+            fuel_cost:
+              formData.fuel_cost,
+            other_expenses:
+              formData.other_expenses,
+            notes:
+              formData.notes,
+          },
+        )
+
+      setSession(updated)
+      setIsEditing(false)
+    } catch (err) {
+      setEditError(
+        err.message ||
+          'Unable to update session.',
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading) {
     return (
       <main className="detail-page">
@@ -227,280 +413,488 @@ function SessionDetail() {
           </p>
         </div>
 
-        <span
-          className={
-            `detail-platform-badge ` +
-            `detail-platform-${session.platform}`
-          }
-        >
-          {formatPlatform(
-            session.platform,
+        <div className="detail-header-actions">
+          <span
+            className={
+              `detail-platform-badge ` +
+              `detail-platform-${session.platform}`
+            }
+          >
+            {formatPlatform(
+              session.platform,
+            )}
+          </span>
+
+          {!isEditing && (
+            <button
+              type="button"
+              className="detail-edit-button"
+              onClick={startEditing}
+            >
+              Edit Session
+            </button>
           )}
-        </span>
+        </div>
       </div>
 
-      <section className="detail-metrics-grid">
-        <article className="detail-metric-card">
-          <span>
-            Net Income
-          </span>
+      {isEditing ? (
+        <form
+          className="detail-edit-form"
+          onSubmit={handleSubmit}
+        >
+          <section className="detail-section">
+            <div className="detail-section-header">
+              <div>
+                <p className="detail-eyebrow">
+                  EDIT SESSION
+                </p>
 
-          <strong>
-            {formatMoney(
-              metrics.net_income,
+                <h2>
+                  Session Information
+                </h2>
+              </div>
+            </div>
+
+            {editError && (
+              <div className="detail-edit-error">
+                {editError}
+              </div>
             )}
-          </strong>
-        </article>
 
-        <article className="detail-metric-card">
-          <span>
-            Distance
-          </span>
+            <div className="detail-form-grid">
+              <label className="detail-form-field">
+                <span>
+                  Platform
+                </span>
 
-          <strong>
-            {formatNumber(
-              metrics.distance_km,
-              ' km',
-            )}
-          </strong>
-        </article>
+                <select
+                  name="platform"
+                  value={
+                    formData.platform
+                  }
+                  onChange={handleChange}
+                >
+                  <option value="shopeefood">
+                    ShopeeFood
+                  </option>
 
-        <article className="detail-metric-card">
-          <span>
-            Duration
-          </span>
+                  <option value="grabfood">
+                    GrabFood
+                  </option>
 
-          <strong>
-            {formatDuration(
-              metrics.duration_minutes,
-            )}
-          </strong>
-        </article>
+                  <option value="lalamove">
+                    Lalamove
+                  </option>
+                </select>
+              </label>
 
-        <article className="detail-metric-card">
-          <span>
-            Orders
-          </span>
+              <label className="detail-form-field">
+                <span>
+                  Total Orders
+                </span>
 
-          <strong>
-            {session.total_orders}
-          </strong>
-        </article>
-      </section>
+                <input
+                  type="number"
+                  name="total_orders"
+                  min="0"
+                  step="1"
+                  value={
+                    formData.total_orders
+                  }
+                  onChange={handleChange}
+                />
+              </label>
 
-      <section className="detail-section">
-        <div className="detail-section-header">
-          <div>
-            <p className="detail-eyebrow">
-              PERFORMANCE
-            </p>
+              <label className="detail-form-field">
+                <span>
+                  Start Mileage
+                </span>
 
-            <h2>
-              Earnings Efficiency
-            </h2>
-          </div>
-        </div>
+                <input
+                  type="number"
+                  name="start_mileage"
+                  min="0"
+                  step="0.01"
+                  value={
+                    formData.start_mileage
+                  }
+                  onChange={handleChange}
+                />
+              </label>
 
-        <div className="detail-info-grid">
-          <div className="detail-info-item">
-            <span>
-              Income / Hour
-            </span>
+              <label className="detail-form-field">
+                <span>
+                  End Mileage
+                </span>
 
-            <strong>
-              {metrics.income_per_hour
-                === null
-                ? '-'
-                : formatMoney(
-                    metrics.income_per_hour,
+                <input
+                  type="number"
+                  name="end_mileage"
+                  min="0"
+                  step="0.01"
+                  value={
+                    formData.end_mileage
+                  }
+                  onChange={handleChange}
+                />
+              </label>
+
+              <label className="detail-form-field">
+                <span>
+                  Gross Income (RM)
+                </span>
+
+                <input
+                  type="number"
+                  name="gross_income"
+                  min="0"
+                  step="0.01"
+                  value={
+                    formData.gross_income
+                  }
+                  onChange={handleChange}
+                />
+              </label>
+
+              <label className="detail-form-field">
+                <span>
+                  Fuel Cost (RM)
+                </span>
+
+                <input
+                  type="number"
+                  name="fuel_cost"
+                  min="0"
+                  step="0.01"
+                  value={
+                    formData.fuel_cost
+                  }
+                  onChange={handleChange}
+                />
+              </label>
+
+              <label className="detail-form-field">
+                <span>
+                  Other Expenses (RM)
+                </span>
+
+                <input
+                  type="number"
+                  name="other_expenses"
+                  min="0"
+                  step="0.01"
+                  value={
+                    formData.other_expenses
+                  }
+                  onChange={handleChange}
+                />
+              </label>
+
+              <label className="detail-form-field detail-form-notes">
+                <span>
+                  Notes
+                </span>
+
+                <textarea
+                  name="notes"
+                  rows="4"
+                  maxLength="2000"
+                  value={
+                    formData.notes
+                  }
+                  onChange={handleChange}
+                />
+              </label>
+            </div>
+
+            <div className="detail-form-actions">
+              <button
+                type="button"
+                className="detail-cancel-button"
+                onClick={cancelEditing}
+                disabled={saving}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="detail-save-button"
+                disabled={saving}
+              >
+                {saving
+                  ? 'Saving...'
+                  : 'Save Changes'}
+              </button>
+            </div>
+          </section>
+        </form>
+      ) : (
+        <>
+          <section className="detail-metrics-grid">
+            <article className="detail-metric-card">
+              <span>
+                Net Income
+              </span>
+
+              <strong>
+                {formatMoney(
+                  metrics.net_income,
+                )}
+              </strong>
+            </article>
+
+            <article className="detail-metric-card">
+              <span>
+                Distance
+              </span>
+
+              <strong>
+                {formatNumber(
+                  metrics.distance_km,
+                  ' km',
+                )}
+              </strong>
+            </article>
+
+            <article className="detail-metric-card">
+              <span>
+                Duration
+              </span>
+
+              <strong>
+                {formatDuration(
+                  metrics.duration_minutes,
+                )}
+              </strong>
+            </article>
+
+            <article className="detail-metric-card">
+              <span>
+                Orders
+              </span>
+
+              <strong>
+                {session.total_orders}
+              </strong>
+            </article>
+          </section>
+
+          <section className="detail-section">
+            <div className="detail-section-header">
+              <div>
+                <p className="detail-eyebrow">
+                  PERFORMANCE
+                </p>
+
+                <h2>
+                  Earnings Efficiency
+                </h2>
+              </div>
+            </div>
+
+            <div className="detail-info-grid">
+              <div className="detail-info-item">
+                <span>
+                  Income / Hour
+                </span>
+
+                <strong>
+                  {metrics.income_per_hour
+                    === null
+                    ? '-'
+                    : formatMoney(
+                        metrics.income_per_hour,
+                      )}
+                </strong>
+              </div>
+
+              <div className="detail-info-item">
+                <span>
+                  Income / Order
+                </span>
+
+                <strong>
+                  {metrics.income_per_order
+                    === null
+                    ? '-'
+                    : formatMoney(
+                        metrics.income_per_order,
+                      )}
+                </strong>
+              </div>
+
+              <div className="detail-info-item">
+                <span>
+                  Income / KM
+                </span>
+
+                <strong>
+                  {metrics.income_per_km
+                    === null
+                    ? '-'
+                    : formatMoney(
+                        metrics.income_per_km,
+                      )}
+                </strong>
+              </div>
+            </div>
+          </section>
+
+          <section className="detail-section">
+            <div className="detail-section-header">
+              <div>
+                <p className="detail-eyebrow">
+                  RIDE INFORMATION
+                </p>
+
+                <h2>
+                  Session Details
+                </h2>
+              </div>
+
+              <span className="detail-status">
+                Completed
+              </span>
+            </div>
+
+            <div className="detail-info-grid">
+              <div className="detail-info-item">
+                <span>
+                  Start Time
+                </span>
+
+                <strong>
+                  {formatDateTime(
+                    session.start_time,
                   )}
-            </strong>
-          </div>
+                </strong>
+              </div>
 
-          <div className="detail-info-item">
-            <span>
-              Income / Order
-            </span>
+              <div className="detail-info-item">
+                <span>
+                  End Time
+                </span>
 
-            <strong>
-              {metrics.income_per_order
-                === null
-                ? '-'
-                : formatMoney(
-                    metrics.income_per_order,
+                <strong>
+                  {formatDateTime(
+                    session.end_time,
                   )}
-            </strong>
-          </div>
+                </strong>
+              </div>
 
-          <div className="detail-info-item">
-            <span>
-              Income / KM
-            </span>
+              <div className="detail-info-item">
+                <span>
+                  Start Mileage
+                </span>
 
-            <strong>
-              {metrics.income_per_km
-                === null
-                ? '-'
-                : formatMoney(
-                    metrics.income_per_km,
+                <strong>
+                  {formatNumber(
+                    session.start_mileage,
+                    ' km',
                   )}
-            </strong>
-          </div>
-        </div>
-      </section>
+                </strong>
+              </div>
 
-      <section className="detail-section">
-        <div className="detail-section-header">
-          <div>
-            <p className="detail-eyebrow">
-              RIDE INFORMATION
-            </p>
+              <div className="detail-info-item">
+                <span>
+                  End Mileage
+                </span>
 
-            <h2>
-              Session Details
-            </h2>
-          </div>
+                <strong>
+                  {formatNumber(
+                    session.end_mileage,
+                    ' km',
+                  )}
+                </strong>
+              </div>
+            </div>
+          </section>
 
-          <span className="detail-status">
-            Completed
-          </span>
-        </div>
+          <section className="detail-section">
+            <div className="detail-section-header">
+              <div>
+                <p className="detail-eyebrow">
+                  FINANCIAL
+                </p>
 
-        <div className="detail-info-grid">
-          <div className="detail-info-item">
-            <span>
-              Start Time
-            </span>
+                <h2>
+                  Earnings & Expenses
+                </h2>
+              </div>
+            </div>
 
-            <strong>
-              {formatDateTime(
-                session.start_time,
-              )}
-            </strong>
-          </div>
+            <div className="detail-info-grid">
+              <div className="detail-info-item">
+                <span>
+                  Gross Income
+                </span>
 
-          <div className="detail-info-item">
-            <span>
-              End Time
-            </span>
+                <strong>
+                  {formatMoney(
+                    session.gross_income,
+                  )}
+                </strong>
+              </div>
 
-            <strong>
-              {formatDateTime(
-                session.end_time,
-              )}
-            </strong>
-          </div>
+              <div className="detail-info-item">
+                <span>
+                  Fuel Cost
+                </span>
 
-          <div className="detail-info-item">
-            <span>
-              Start Mileage
-            </span>
+                <strong>
+                  {formatMoney(
+                    session.fuel_cost,
+                  )}
+                </strong>
+              </div>
 
-            <strong>
-              {formatNumber(
-                session.start_mileage,
-                ' km',
-              )}
-            </strong>
-          </div>
+              <div className="detail-info-item">
+                <span>
+                  Other Expenses
+                </span>
 
-          <div className="detail-info-item">
-            <span>
-              End Mileage
-            </span>
+                <strong>
+                  {formatMoney(
+                    session.other_expenses,
+                  )}
+                </strong>
+              </div>
 
-            <strong>
-              {formatNumber(
-                session.end_mileage,
-                ' km',
-              )}
-            </strong>
-          </div>
-        </div>
-      </section>
+              <div className="detail-info-item">
+                <span>
+                  Net Income
+                </span>
 
-      <section className="detail-section">
-        <div className="detail-section-header">
-          <div>
-            <p className="detail-eyebrow">
-              FINANCIAL
-            </p>
+                <strong>
+                  {formatMoney(
+                    metrics.net_income,
+                  )}
+                </strong>
+              </div>
+            </div>
+          </section>
 
-            <h2>
-              Earnings & Expenses
-            </h2>
-          </div>
-        </div>
+          <section className="detail-section">
+            <div className="detail-section-header">
+              <div>
+                <p className="detail-eyebrow">
+                  NOTES
+                </p>
 
-        <div className="detail-info-grid">
-          <div className="detail-info-item">
-            <span>
-              Gross Income
-            </span>
+                <h2>
+                  Session Notes
+                </h2>
+              </div>
+            </div>
 
-            <strong>
-              {formatMoney(
-                session.gross_income,
-              )}
-            </strong>
-          </div>
-
-          <div className="detail-info-item">
-            <span>
-              Fuel Cost
-            </span>
-
-            <strong>
-              {formatMoney(
-                session.fuel_cost,
-              )}
-            </strong>
-          </div>
-
-          <div className="detail-info-item">
-            <span>
-              Other Expenses
-            </span>
-
-            <strong>
-              {formatMoney(
-                session.other_expenses,
-              )}
-            </strong>
-          </div>
-
-          <div className="detail-info-item">
-            <span>
-              Net Income
-            </span>
-
-            <strong>
-              {formatMoney(
-                metrics.net_income,
-              )}
-            </strong>
-          </div>
-        </div>
-      </section>
-
-      <section className="detail-section">
-        <div className="detail-section-header">
-          <div>
-            <p className="detail-eyebrow">
-              NOTES
-            </p>
-
-            <h2>
-              Session Notes
-            </h2>
-          </div>
-        </div>
-
-        <div className="detail-notes">
-          {session.notes ||
-            'No notes were added for this session.'}
-        </div>
-      </section>
+            <div className="detail-notes">
+              {session.notes ||
+                'No notes were added for this session.'}
+            </div>
+          </section>
+        </>
+      )}
     </main>
   )
 }

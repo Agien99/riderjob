@@ -48,3 +48,18 @@ export function getSessionDetail(
     `/api/sessions/${sessionId}`,
   )
 }
+
+export function updateRiderSession(
+  sessionId,
+  sessionData,
+) {
+  return apiRequest(
+    `/api/sessions/${sessionId}`,
+    {
+      method: 'PUT',
+      body: JSON.stringify(
+        sessionData,
+      ),
+    },
+  )
+}
