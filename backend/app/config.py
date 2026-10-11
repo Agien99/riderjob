@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     app_name: str = "RiderJob API"
     environment: str = "development"
 
-    frontend_url: str = "https://agien99.github.io"
+    frontend_url: str = "https://rider.digitechgien.com.my"
     database_url: str | None = None
 
     jwt_secret_key: str = "development-only-secret"
