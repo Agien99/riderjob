@@ -7,8 +7,8 @@ on:
       - main
     paths:
       - 'frontend/**'
+      - 'backend/**'
       - '.github/workflows/vps-deploy.yml'
-
   workflow_dispatch:
 
 permissions:
@@ -19,8 +19,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy-frontend:
-    name: Build and Deploy Frontend
+  deploy:
+    name: Test and Deploy RiderJob
     runs-on: ubuntu-latest
     environment: production
 
@@ -31,39 +31,142 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
 
-      - name: Run ESLint
+      - name: Run frontend lint
         working-directory: frontend
         run: npm run lint
 
-      - name: Build production frontend
+      - name: Build frontend
         working-directory: frontend
         env:
           VITE_API_BASE_URL: https://rider.digitechgien.com.my
         run: npm run build
 
-      - name: Configure deployment SSH
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install backend test dependencies
+        working-directory: backend
+        run: python -m pip install -r requirements.txt
+
+      - name: Run backend tests
+        working-directory: backend
+        env:
+          PYTHONPATH: .
+          JWT_SECRET_KEY: ci-test-secret-not-for-production
+          ENVIRONMENT: testing
+        run: python -m pytest -v
+
+      - name: Configure SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
           SSH_HOST_KEY: ${{ secrets.VPS_SSH_HOST_KEY }}
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-
           printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/riderjob_deploy
           chmod 600 ~/.ssh/riderjob_deploy
-
           printf '%s\n' "$SSH_HOST_KEY" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
-      - name: Deploy frontend to VPS
+      - name: Stage backend on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          SSH="ssh -i $HOME/.ssh/riderjob_deploy -p $VPS_PORT -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          TARGET="$VPS_USER@$VPS_HOST"
+
+          $SSH "$TARGET" \
+            'mkdir -p ~/riderjob-deploy-staging/app'
+
+          rsync -az --delete \
+            --exclude '__pycache__/' \
+            -e "$SSH" \
+            backend/app/ \
+            "$TARGET:riderjob-deploy-staging/app/"
+
+          rsync -az -e "$SSH" \
+            backend/requirements.txt \
+            "$TARGET:riderjob-deploy-staging/requirements.txt"
+
+
+      - name: Publish backend and restart API
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          ssh \
+            -i "$HOME/.ssh/riderjob_deploy" \
+            -p "$VPS_PORT" \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            "$VPS_USER@$VPS_HOST" \
+            'bash -se' <<'REMOTE'
+          set -Eeuo pipefail
+
+          cd /var/www/riderjob
+
+          BACKUP_DIR=$(mktemp -d /home/server/riderjob-backup-XXXXXXXX)
+          cp -a backend/app "$BACKUP_DIR/app"
+          cp backend/requirements.txt "$BACKUP_DIR/requirements.txt"
+
+          rollback() {
+            echo "Backend deployment failed. Restoring previous code."
+
+            rsync -a --delete \
+              "$BACKUP_DIR/app/" backend/app/
+
+            cp "$BACKUP_DIR/requirements.txt" backend/requirements.txt
+
+            sudo -n /usr/bin/systemctl restart riderjob-api.service || true
+            echo "Previous application code restored."
+          }
+
+          trap rollback ERR
+
+          /var/www/riderjob/backend/.venv/bin/python \
+            -m pip install -r \
+            /home/server/riderjob-deploy-staging/requirements.txt
+
+          rsync -a --delete \
+            --exclude '__pycache__/' \
+            /home/server/riderjob-deploy-staging/app/ \
+            backend/app/
+
+          cp /home/server/riderjob-deploy-staging/requirements.txt \
+            backend/requirements.txt
+
+          sudo -n /usr/bin/systemctl restart riderjob-api.service
+
+          for attempt in 1 2 3 4 5; do
+            if curl -fsS http://127.0.0.1:8001/api/health; then
+              echo ""
+              echo "Backend deployment successful."
+              trap - ERR
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "Backend health check failed."
+          false
+          REMOTE
+
+      - name: Deploy frontend
         env:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_PORT: ${{ secrets.VPS_PORT }}
@@ -74,10 +177,10 @@ jobs:
             frontend/dist/ \
             "$VPS_USER@$VPS_HOST:/var/www/riderjob/frontend/dist/"
 
-      - name: Verify HTTPS deployment
+      - name: Verify production health
         run: |
-          curl --fail --silent --show-error \
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 \
             https://rider.digitechgien.com.my/
 
-          curl --fail --silent --show-error \
+          curl --fail --silent --show-error --retry 5 --retry-delay 2 \
             https://rider.digitechgien.com.my/api/health
