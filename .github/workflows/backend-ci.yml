@@ -1,13 +1,17 @@
+
 name: Backend CI
 
 on:
   push:
     branches:
       - main
-
+      - deployment/vps-migration
   pull_request:
     branches:
       - main
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -21,7 +25,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -31,22 +35,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Verify Neon database connection
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PYTHONPATH: .
-        run: python scripts/check_database.py
-
-      - name: Apply database migrations
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PYTHONPATH: .
-        run: alembic upgrade head
+          python -m pip install -r requirements.txt
 
       - name: Run tests
         env:
           PYTHONPATH: .
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_SECRET_KEY: ci-test-secret-not-for-production
+          ENVIRONMENT: testing
         run: python -m pytest -v

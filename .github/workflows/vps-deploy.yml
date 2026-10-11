@@ -1,0 +1,76 @@
+
+name: Deploy RiderJob to VPS
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: riderjob-production
+  cancel-in-progress: false
+
+jobs:
+  deploy-frontend:
+    name: Build and Deploy Frontend
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Build production frontend
+        working-directory: frontend
+        env:
+          VITE_API_BASE_URL: https://rider.digitechgien.com.my
+        run: npm run build
+
+      - name: Configure deployment SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
+          SSH_HOST_KEY: ${{ secrets.VPS_SSH_HOST_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/riderjob_deploy
+          chmod 600 ~/.ssh/riderjob_deploy
+
+          printf '%s\n' "$SSH_HOST_KEY" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Deploy frontend to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i $HOME/.ssh/riderjob_deploy -p $VPS_PORT -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
+            frontend/dist/ \
+            "$VPS_USER@$VPS_HOST:/var/www/riderjob/frontend/dist/"
+
+      - name: Verify HTTPS deployment
+        run: |
+          curl --fail --silent --show-error \
+            https://rider.digitechgien.com.my/
+
+          curl --fail --silent --show-error \
+            https://rider.digitechgien.com.my/api/health
