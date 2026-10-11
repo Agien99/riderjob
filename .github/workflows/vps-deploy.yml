@@ -2,6 +2,13 @@
 name: Deploy RiderJob to VPS
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/vps-deploy.yml'
+
   workflow_dispatch:
 
 permissions:
